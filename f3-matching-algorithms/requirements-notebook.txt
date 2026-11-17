@@ -1,0 +1,11 @@
+# F3 の Notebook（notebooks/*.ipynb）と matching_charts.py で使うライブラリ
+#
+# Core（starter.py・experiments.py・tests）は Python 3 の標準ライブラリだけで動くので、これらは不要です。
+# Google Colab には最初から入っています（CPU ランタイムで十分。GPU・TPU は不要）。
+#
+#   ローカル：pip install -r requirements-notebook.txt
+matplotlib>=3.7
+numpy>=1.24
+pandas>=2.0        # 表の表示に使う（なければ Notebook は文字の表で表示する）
+jupyter            # ローカルで Notebook を開く場合
+# nbconvert        # 研究発表用 Notebook を HTML スライドにする場合

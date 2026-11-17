@@ -1,0 +1,11 @@
+{
+  "description": "比較用の架空の投資配分シナリオ（配分率の合計は 1）。どの配分が最もよいかは決めていません。",
+  "sectors": ["education", "rd", "infrastructure", "healthcare"],
+  "scenarios": [
+    {"id": "equal", "label": "Equal Allocation", "shares": {"education": 0.25, "rd": 0.25, "infrastructure": 0.25, "healthcare": 0.25}},
+    {"id": "education", "label": "Education Priority", "shares": {"education": 0.55, "rd": 0.15, "infrastructure": 0.15, "healthcare": 0.15}},
+    {"id": "rd", "label": "R&D Priority", "shares": {"education": 0.15, "rd": 0.55, "infrastructure": 0.15, "healthcare": 0.15}},
+    {"id": "infrastructure", "label": "Infrastructure Priority", "shares": {"education": 0.15, "rd": 0.15, "infrastructure": 0.55, "healthcare": 0.15}},
+    {"id": "healthcare", "label": "Healthcare Priority", "shares": {"education": 0.15, "rd": 0.15, "infrastructure": 0.15, "healthcare": 0.55}}
+  ]
+}

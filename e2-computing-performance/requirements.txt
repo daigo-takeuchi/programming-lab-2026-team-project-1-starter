@@ -1,0 +1,19 @@
+# E2 の依存ライブラリ
+#
+# ■ ローカル（Core Research の .py と Notebook の CPU 部分）に必要なもの
+numpy>=1.24
+matplotlib>=3.7
+#
+# ■ 任意（なくても starter.py・unittest・Notebook は動き、該当部分をスキップする）
+#   PyTorch・JAX は CPU / GPU（CUDA のバージョン）/ TPU で正しいインストール方法が違うため、
+#   ここでは自動インストールしない。Google Colab にはランタイムに合ったものが標準で入っている。
+#   ローカルの CPU だけで試す場合の例：
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+#     pip install jax
+# torch
+# jax
+#
+# ■ Notebook をローカルで開く・検証する場合
+# jupyter
+# nbclient
+# ipykernel

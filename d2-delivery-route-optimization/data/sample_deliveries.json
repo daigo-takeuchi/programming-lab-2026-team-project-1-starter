@@ -1,0 +1,31 @@
+{
+  "scenarios": [
+    {
+      "name": "Town 1 (nearest neighbor finds the optimum)",
+      "description": "5 delivery locations spread around the depot.",
+      "depot": "Depot",
+      "locations": {
+        "Depot": [0, 0],
+        "A": [2, 3],
+        "B": [5, 1],
+        "C": [6, 4],
+        "D": [1, 6],
+        "E": [4, 7]
+      }
+    },
+    {
+      "name": "Town 2 (nearest neighbor misses the optimum)",
+      "description": "6 delivery locations to the north and south of the depot.",
+      "depot": "Depot",
+      "locations": {
+        "Depot": [0, 0],
+        "A": [-3, -8],
+        "B": [0, -4],
+        "C": [2, -7],
+        "D": [2, 8],
+        "E": [6, -6],
+        "F": [6, 3]
+      }
+    }
+  ]
+}

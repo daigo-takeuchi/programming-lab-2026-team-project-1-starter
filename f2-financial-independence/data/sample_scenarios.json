@@ -1,0 +1,62 @@
+{
+  "description": "F2 教材用の架空のシナリオ。教育用に作った数値であり、実際の投資収益率・平均的な家計・金融商品を表すものではありません。",
+  "units": {
+    "money": "万円（1 年あたりの額。税・社会保険料・インフレ・手数料は考慮しない）",
+    "age": "歳（整数）",
+    "rate": "小数（0.03 = 年 3%）"
+  },
+  "settings": {
+    "withdrawal_rate": 0.04,
+    "accumulation_end_age": 80,
+    "retirement_end_age": 100,
+    "report_age": 65,
+    "retirement_return": null,
+    "retirement_return_note": "null のときは、各シナリオの annual_return をリタイア後にも使う"
+  },
+  "scenarios": [
+    {
+      "name": "standard",
+      "label": "Standard",
+      "description": "Scenario A：標準的な貯蓄（架空）",
+      "start_age": 22,
+      "initial_assets": 0,
+      "annual_income": 400,
+      "savings_rate": 0.20,
+      "annual_return": 0.03,
+      "annual_expenses": 320
+    },
+    {
+      "name": "high_savings",
+      "label": "High Savings",
+      "description": "Scenario B：高貯蓄率（架空）",
+      "start_age": 22,
+      "initial_assets": 0,
+      "annual_income": 400,
+      "savings_rate": 0.40,
+      "annual_return": 0.03,
+      "annual_expenses": 240
+    },
+    {
+      "name": "high_return",
+      "label": "High Return",
+      "description": "Scenario C：高収益率（架空。6% は教育用の仮定で、将来の収益を示すものではない）",
+      "start_age": 22,
+      "initial_assets": 0,
+      "annual_income": 400,
+      "savings_rate": 0.20,
+      "annual_return": 0.06,
+      "annual_expenses": 320
+    },
+    {
+      "name": "high_income",
+      "label": "High Income",
+      "description": "Scenario D：高所得（架空）",
+      "start_age": 22,
+      "initial_assets": 0,
+      "annual_income": 600,
+      "savings_rate": 0.30,
+      "annual_return": 0.03,
+      "annual_expenses": 420
+    }
+  ]
+}

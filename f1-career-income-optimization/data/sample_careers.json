@@ -1,0 +1,88 @@
+{
+  "description": "F1 教材用の架空のキャリアデータ。教育用に作った数値であり、実際の賃金統計・平均年収・職業別所得を表すものではありません。",
+  "units": {
+    "money": "万円（1 年あたりの額面の年収、または費用。税・社会保険料は考慮しない）",
+    "age": "歳（整数）",
+    "rate": "小数（0.02 = 年 2%）"
+  },
+  "settings": {
+    "base_age": 18,
+    "retirement_age": 65,
+    "retirement_rule": "退職年齢の年からは計算しない（65 なら 64 歳の 1 年間まで）",
+    "discount_rate": 0.03,
+    "switch_age_range": [22, 60]
+  },
+  "careers": [
+    {
+      "name": "early_job",
+      "label": "Early Job",
+      "description": "Career A：18 歳で就職（架空）",
+      "start_age": 18,
+      "initial_salary": 250,
+      "annual_growth_rate": 0.02,
+      "retirement_age": 65,
+      "education_cost": 0,
+      "certificate": null,
+      "job_change": null
+    },
+    {
+      "name": "vocational",
+      "label": "Vocational (20)",
+      "description": "RQ1 用に追加した比較例：18〜19 歳は専門学校などで学び、20 歳で就職（架空）。進学費用 200 万円はこの教材で置いた仮定",
+      "start_age": 20,
+      "initial_salary": 280,
+      "annual_growth_rate": 0.02,
+      "retirement_age": 65,
+      "education_cost": 200,
+      "certificate": null,
+      "job_change": null
+    },
+    {
+      "name": "university",
+      "label": "University",
+      "description": "Career B：18〜21 歳は進学し、22 歳で就職（架空）。進学費用 400 万円を 4 年間に均等に支払う",
+      "start_age": 22,
+      "initial_salary": 330,
+      "annual_growth_rate": 0.025,
+      "retirement_age": 65,
+      "education_cost": 400,
+      "certificate": null,
+      "job_change": null
+    },
+    {
+      "name": "certificate",
+      "label": "Certificate",
+      "description": "Career C：20 歳で就職し、30 歳で資格取得（架空）。取得の翌年から年収 +40 万円。20 歳までの進学費用はこのデータでは 0 としている（仮定）",
+      "start_age": 20,
+      "initial_salary": 280,
+      "annual_growth_rate": 0.02,
+      "retirement_age": 65,
+      "education_cost": 0,
+      "certificate": {
+        "age": 30,
+        "cost": 100,
+        "salary_increase": 40,
+        "study_years": 0,
+        "study_income_ratio": 1.0
+      },
+      "job_change": null
+    },
+    {
+      "name": "job_change",
+      "label": "Job Change",
+      "description": "Career D：20 歳で就職し、35 歳で転職（架空）。転職後の初年度年収 420 万円・昇給率 2.5%、転職費用 30 万円。20 歳までの進学費用はこのデータでは 0 としている（仮定）",
+      "start_age": 20,
+      "initial_salary": 280,
+      "annual_growth_rate": 0.02,
+      "retirement_age": 65,
+      "education_cost": 0,
+      "certificate": null,
+      "job_change": {
+        "age": 35,
+        "new_salary": 420,
+        "growth_rate": 0.025,
+        "cost": 30
+      }
+    }
+  ]
+}

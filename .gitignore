@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+# 教材のサンプルデータ（架空のアクセスログ。IP は RFC 5737 のドキュメント用アドレス）は追跡する
+!c1-web-attack-detection/data/sample_access.log
+
+# Local large artifacts
+checkpoints/
+model_weights/
+
+# Textbook source code
+# 柴田望洋『新・明解 Pythonで学ぶアルゴリズムとデータ構造（第2版）』のサンプルコードは、
+# 再配布の許諾が確認できていないため追跡しない（各自が公式サイトから入手して textbook/ に配置する）。
+# 教員が作成した textbook/__init__.py と textbook/README.md は追跡する。
+**/textbook/**/*.py
+!**/textbook/__init__.py

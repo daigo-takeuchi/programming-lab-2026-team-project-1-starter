@@ -1,0 +1,18 @@
+{
+  "description": "G2 教育用の架空の国家（Country A〜E）。実在の国家・実際の外交や安全保障のデータではありません。すべて架空の値です。",
+  "fields": {
+    "id": "国家の ID（A〜E）",
+    "name": "架空の名前",
+    "cooperation_preference": "協調を好む程度（0〜1）。Conditional Cooperation の協調確率に影響する",
+    "trust": "他国一般への初期信頼度（0〜1）。国家ペアの初期信頼度は 2 国の平均",
+    "economic_interdependence": "経済的相互依存の程度（0〜1）。Conditional Cooperation の協調確率に影響する",
+    "strategy": "意思決定戦略：always_cooperate / always_noncooperate / tit_for_tat / conditional"
+  },
+  "countries": [
+    {"id": "A", "name": "Country A", "cooperation_preference": 0.7, "trust": 0.6, "economic_interdependence": 0.6, "strategy": "conditional"},
+    {"id": "B", "name": "Country B", "cooperation_preference": 0.5, "trust": 0.5, "economic_interdependence": 0.4, "strategy": "tit_for_tat"},
+    {"id": "C", "name": "Country C", "cooperation_preference": 0.6, "trust": 0.4, "economic_interdependence": 0.7, "strategy": "conditional"},
+    {"id": "D", "name": "Country D", "cooperation_preference": 0.8, "trust": 0.7, "economic_interdependence": 0.3, "strategy": "always_cooperate"},
+    {"id": "E", "name": "Country E", "cooperation_preference": 0.3, "trust": 0.3, "economic_interdependence": 0.5, "strategy": "conditional"}
+  ]
+}

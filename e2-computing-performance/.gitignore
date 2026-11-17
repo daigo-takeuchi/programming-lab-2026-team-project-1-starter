@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# 仮想環境
+.venv/
+venv/
+env/
+
+# テスト・ツール
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# 実験結果（必要なものだけ選んで提出する）
+notebooks/results/
+
+# エディタ・OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

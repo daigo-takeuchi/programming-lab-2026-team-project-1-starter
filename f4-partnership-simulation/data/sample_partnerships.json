@@ -1,0 +1,127 @@
+{
+  "description": "F4 教育用の架空データ。実在の人物・実際の夫婦やカップルを表すものではありません。Partner A・B は性別を意味しません。係数はすべて架空の値で、実際の満足度や離婚率を予測しません。",
+  "units": {
+    "annual_income": "万円/年（額面・架空）",
+    "weekly_work_hours": "時間/週",
+    "available_housework_hours": "時間/週（家事に使える上限）",
+    "total_housework_hours": "時間/週（2人の家事の合計）",
+    "annual_expenses": "万円/年（2人の生活費の合計）",
+    "shares": "Partner A の分担率（0〜1）。Partner B は 1 − 分担率"
+  },
+  "base_partners": {
+    "A": {
+      "id": "A",
+      "annual_income": 330,
+      "weekly_work_hours": 35,
+      "available_housework_hours": 22,
+      "preferred_housework_share": 0.5,
+      "preferred_financial_share": 0.4,
+      "communication_score": 0.5,
+      "fairness_weight": 0.6,
+      "satisfaction": 0.7
+    },
+    "B": {
+      "id": "B",
+      "annual_income": 520,
+      "weekly_work_hours": 45,
+      "available_housework_hours": 15,
+      "preferred_housework_share": 0.3,
+      "preferred_financial_share": 0.55,
+      "communication_score": 0.5,
+      "fairness_weight": 0.4,
+      "satisfaction": 0.7
+    }
+  },
+  "household": {
+    "total_housework_hours": 30,
+    "annual_expenses": 360
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "label": "Scenario A: Equal sharing",
+      "description": "家事 50:50、生活費 50:50、コミュニケーション中程度。分担は固定",
+      "housework_rule": "equal",
+      "financial_rule": "equal",
+      "strategy": "fixed",
+      "communication": {"A": 0.5, "B": 0.5}
+    },
+    {
+      "id": "B",
+      "label": "Scenario B: Proportional sharing",
+      "description": "家事は労働時間に応じて調整、生活費は所得比例、コミュニケーション中程度。分担は固定",
+      "housework_rule": "work_hours",
+      "financial_rule": "income",
+      "strategy": "fixed",
+      "communication": {"A": 0.5, "B": 0.5}
+    },
+    {
+      "id": "C",
+      "label": "Scenario C: Concentrated burden",
+      "description": "家事 80:20（Partner A に集中）、生活費 50:50、コミュニケーションが低い。分担は固定",
+      "housework_rule": 0.8,
+      "financial_rule": "equal",
+      "strategy": "fixed",
+      "communication": {"A": 0.2, "B": 0.2}
+    },
+    {
+      "id": "D",
+      "label": "Scenario D: Adaptive sharing",
+      "description": "最初は 50:50 で始め、定期的に家事分担と生活費の負担を見直す。コミュニケーションが高い",
+      "housework_rule": "equal",
+      "financial_rule": "equal",
+      "strategy": "adaptive",
+      "communication": {"A": 0.8, "B": 0.8}
+    }
+  ],
+  "stress_event_sets": {
+    "none": [],
+    "combined": [
+      {"year": 5, "type": "income_change", "partner": "A", "change": -0.2, "stress": 0.2, "note": "Partner A の所得 −20%"},
+      {"year": 8, "type": "housework_change", "change": 10, "stress": 0.2, "note": "家事の総時間 +10 時間/週（例：家族の介護・子育て）"}
+    ],
+    "income_drop": [
+      {"year": 5, "type": "income_change", "partner": "A", "change": -0.2, "stress": 0.2, "note": "Partner A の所得 −20%"}
+    ],
+    "work_increase": [
+      {"year": 5, "type": "work_hours_change", "partner": "B", "change": 10, "stress": 0.2, "note": "Partner B の労働時間 +10 時間/週（家事に使える時間は同じだけ減る）"}
+    ],
+    "housework_increase": [
+      {"year": 5, "type": "housework_change", "change": 10, "stress": 0.2, "note": "家事の総時間 +10 時間/週"}
+    ],
+    "expense_increase": [
+      {"year": 5, "type": "expense_change", "change": 0.3, "duration": 3, "stress": 0.2, "note": "生活費 +30%（3 年間だけの一時的な増加）"}
+    ]
+  },
+  "model_parameters": {
+    "note": "すべて教育用の架空の値。実際の満足度・離婚率を表しません",
+    "base_satisfaction": 0.6,
+    "w_housework": 0.6,
+    "w_financial": 0.4,
+    "w_communication": 0.2,
+    "w_stress": 0.3,
+    "w_free_time": 0.15,
+    "w_overload": 0.5,
+    "w_fairness": 0.3,
+    "w_financial_strain": 0.3,
+    "strain_threshold": 0.5,
+    "communication_buffer": 0.3,
+    "discretionary_hours": 70,
+    "overload_scale_hours": 10,
+    "workload_scale_hours": 20,
+    "alpha": 0.3,
+    "relationship_min_weight": 0.5,
+    "baseline_hazard": 0.01,
+    "beta": 0.08,
+    "gamma": 0.06,
+    "base_stress": 0.1,
+    "stress_duration": 2,
+    "fairness_lambda": 1.0,
+    "share_step": 0.1,
+    "infeasible_fallback": true,
+    "review_interval": 2,
+    "review_threshold": 0.6,
+    "simulation_years": 20,
+    "random_seed": 2026
+  }
+}

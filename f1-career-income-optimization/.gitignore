@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.vscode/
+.DS_Store
+.idea/
+*.egg-info/
+results/
+.ipynb_checkpoints/
+notebooks/*.slides.html

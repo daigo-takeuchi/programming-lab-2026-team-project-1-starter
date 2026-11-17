@@ -1,0 +1,162 @@
+{
+  "description": "Fictional road network inspired by the Tokyo area. Connections, distances and coordinates are NOT real.",
+  "nodes": {
+    "IKB": {
+      "name": "Ikebukuro",
+      "x": 2,
+      "y": 8
+    },
+    "SJK": {
+      "name": "Shinjuku",
+      "x": 0,
+      "y": 5
+    },
+    "SBY": {
+      "name": "Shibuya",
+      "x": 1,
+      "y": 2
+    },
+    "SNG": {
+      "name": "Shinagawa",
+      "x": 4,
+      "y": 0
+    },
+    "TKY": {
+      "name": "Tokyo",
+      "x": 6,
+      "y": 4
+    },
+    "UEN": {
+      "name": "Ueno",
+      "x": 6,
+      "y": 7
+    },
+    "KOT": {
+      "name": "Koto",
+      "x": 10,
+      "y": 4
+    },
+    "TYS": {
+      "name": "Toyosu",
+      "x": 9,
+      "y": 1
+    },
+    "URY": {
+      "name": "Urayasu",
+      "x": 13,
+      "y": 3
+    },
+    "KWS": {
+      "name": "Kawasaki",
+      "x": 3,
+      "y": -3
+    }
+  },
+  "roads": [
+    {
+      "from": "SJK",
+      "to": "IKB",
+      "distance": 4.4,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SJK",
+      "to": "SBY",
+      "distance": 3.8,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SJK",
+      "to": "TKY",
+      "distance": 12.0,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SBY",
+      "to": "SNG",
+      "distance": 4.4,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SNG",
+      "to": "TYS",
+      "distance": 6.2,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SNG",
+      "to": "KWS",
+      "distance": 3.8,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "IKB",
+      "to": "UEN",
+      "distance": 5.0,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "UEN",
+      "to": "TKY",
+      "distance": 3.6,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "TKY",
+      "to": "KOT",
+      "distance": 4.8,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "UEN",
+      "to": "KOT",
+      "distance": 6.0,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "TKY",
+      "to": "TYS",
+      "distance": 5.1,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "TYS",
+      "to": "KOT",
+      "distance": 3.8,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "KOT",
+      "to": "URY",
+      "distance": 3.8,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "TYS",
+      "to": "URY",
+      "distance": 5.4,
+      "status": "open",
+      "cost_multiplier": 1.0
+    },
+    {
+      "from": "SBY",
+      "to": "TKY",
+      "distance": 9.0,
+      "status": "open",
+      "cost_multiplier": 1.0
+    }
+  ]
+}

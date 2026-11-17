@@ -1,0 +1,8 @@
+{
+  "description": "教育用の架空の 2×2 利得行列（囚人のジレンマ型）。現実の国家行動を表すものではありません。actions：C = Cooperate（協調）、N = Non-cooperate（非協調）。payoffs[自分の行動][相手の行動] = 自分の利得",
+  "actions": ["C", "N"],
+  "payoffs": {
+    "C": {"C": 3, "N": 0},
+    "N": {"C": 5, "N": 1}
+  }
+}

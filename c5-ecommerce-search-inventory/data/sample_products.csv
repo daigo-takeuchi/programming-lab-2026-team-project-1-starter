@@ -1,0 +1,21 @@
+id,name,category,price,stock
+1007,Notebook,Stationery,350,20
+1002,Ballpoint Pen,Stationery,120,50
+1015,Wireless Mouse,Electronics,1800,15
+1004,Keyboard,Electronics,3500,8
+1011,USB Cable,Electronics,700,30
+1001,Sticky Notes,Stationery,350,40
+1019,Desk Lamp,Furniture,2800,0
+1008,Mug Cup,Kitchen,800,12
+1003,Water Bottle,Kitchen,1200,25
+1013,Headphones,Electronics,4800,5
+1006,Eraser,Stationery,120,60
+1017,Office Chair,Furniture,12800,3
+1010,Lunch Box,Kitchen,1200,0
+1005,Mouse Pad,Electronics,700,18
+1020,Bookshelf,Furniture,9800,2
+1012,Highlighter,Stationery,150,35
+1009,Tea Towel,Kitchen,500,22
+1016,Webcam,Electronics,5200,0
+1014,Cushion,Furniture,1800,9
+1018,Ruler,Stationery,200,45

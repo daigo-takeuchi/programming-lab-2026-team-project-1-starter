@@ -1,0 +1,19 @@
+{
+  "description": "F3 の関係継続モデルの教育用パラメータ。すべて完全に架空の数値で、現実の離婚率・関係解消率や、実証された因果効果を表すものではありません。",
+  "formula": "annual_dissolution_probability = clip(baseline_hazard - alpha * initial_compatibility - beta * conflict_resolution + gamma * annual_stress, 0, 1)",
+  "baseline_hazard": 0.08,
+  "alpha": 0.04,
+  "beta": 0.02,
+  "gamma": 0.03,
+  "default_annual_stress": 0.3,
+  "default_conflict_resolution": 0.5,
+  "simulation_years": 20,
+  "random_seed": 42,
+  "notes": {
+    "baseline_hazard": "基準となる年次関係解消確率（0〜1、架空）",
+    "alpha": "初期適合度（0〜1）が 1 高いと、年次解消確率が alpha 下がる（教育用の仮定）",
+    "beta": "葛藤対処能力（0〜1、架空の指標）が 1 高いと、年次解消確率が beta 下がる（教育用の仮定）",
+    "gamma": "年次ストレス（0〜1、架空）が 1 高いと、年次解消確率が gamma 上がる（教育用の仮定）",
+    "default_conflict_resolution": "Core では全ペア共通の値。実在の人物について推定しない（作業指示のパラメータに追加した項目）"
+  }
+}

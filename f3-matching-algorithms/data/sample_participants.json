@@ -1,0 +1,108 @@
+{
+  "description": "F3 教材用の架空の参加者（Group A・Group B 各 5 人）。実在の人物ではありません。Group A・B はアルゴリズム上の区分で、性別や性的指向を意味しません。",
+  "units": {
+    "age": "歳（整数）",
+    "lifestyle": "各項目 0〜1（morning：朝型の度合い、social：人付き合いの多さ、tidy：整理整頓の好み）",
+    "values": "各項目 0〜1（family：家庭を重視、career：仕事を重視、adventure：新しい経験を重視）",
+    "min_score": "この希望スコア以上の相手だけを受け入れる（0〜1）"
+  },
+  "design_notes": [
+    "A1 と B1：相互に第 1 希望になるように、よく似たプロフィールにしている",
+    "B2：A2・A3 の両方が第 1 希望にする人気の候補（複数人が同じ候補を希望するケース）",
+    "A2 と A3：B2 は A2 より A3 を好むので、Greedy（A の ID 順に処理）と Gale-Shapley で結果が異なる",
+    "A5：希望条件（min_score）が厳しく、受け入れ可能な相手がいないので成立しない",
+    "初期適合度の高いペア（A1–B1、A3–B2、A4–B4 など）と低いペア（A1–B5、A3–B5、A4–B2 など）がある。B5 は多くの相手と適合度が低めで、Random では B5 を含む適合度の低いペアができることがある"
+  ],
+  "participants": [
+    {
+      "id": "A1", "group": "A", "age": 28,
+      "interests": ["hiking", "cooking", "photography"],
+      "lifestyle": {"morning": 0.8, "social": 0.5, "tidy": 0.7},
+      "values": {"family": 0.8, "career": 0.5, "adventure": 0.6},
+      "preferences": {"weights": {"interest": 0.3, "lifestyle": 0.2, "values": 0.4, "age": 0.1},
+                      "age_range": [25, 32], "min_score": 0.45},
+      "acceptable_candidates": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    {
+      "id": "A2", "group": "A", "age": 31,
+      "interests": ["music", "travel", "games"],
+      "lifestyle": {"morning": 0.3, "social": 0.8, "tidy": 0.4},
+      "values": {"family": 0.5, "career": 0.8, "adventure": 0.7},
+      "preferences": {"weights": {"interest": 0.4, "lifestyle": 0.2, "values": 0.3, "age": 0.1},
+                      "age_range": [26, 34], "min_score": 0.35},
+      "acceptable_candidates": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    {
+      "id": "A3", "group": "A", "age": 27,
+      "interests": ["music", "travel", "reading"],
+      "lifestyle": {"morning": 0.4, "social": 0.7, "tidy": 0.6},
+      "values": {"family": 0.6, "career": 0.7, "adventure": 0.8},
+      "preferences": {"weights": {"interest": 0.4, "lifestyle": 0.2, "values": 0.3, "age": 0.1},
+                      "age_range": [24, 31], "min_score": 0.35},
+      "acceptable_candidates": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    {
+      "id": "A4", "group": "A", "age": 35,
+      "interests": ["gardening", "movies"],
+      "lifestyle": {"morning": 0.9, "social": 0.2, "tidy": 0.9},
+      "values": {"family": 0.9, "career": 0.3, "adventure": 0.2},
+      "preferences": {"weights": {"interest": 0.2, "lifestyle": 0.3, "values": 0.3, "age": 0.2},
+                      "age_range": [28, 40], "min_score": 0.30},
+      "acceptable_candidates": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    {
+      "id": "A5", "group": "A", "age": 30,
+      "interests": ["art", "running", "coffee"],
+      "lifestyle": {"morning": 0.6, "social": 0.4, "tidy": 0.5},
+      "values": {"family": 0.4, "career": 0.9, "adventure": 0.5},
+      "preferences": {"weights": {"interest": 0.5, "lifestyle": 0.1, "values": 0.3, "age": 0.1},
+                      "age_range": [28, 32], "min_score": 0.85},
+      "acceptable_candidates": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    {
+      "id": "B1", "group": "B", "age": 29,
+      "interests": ["hiking", "cooking", "photography", "reading"],
+      "lifestyle": {"morning": 0.8, "social": 0.5, "tidy": 0.8},
+      "values": {"family": 0.8, "career": 0.4, "adventure": 0.6},
+      "preferences": {"weights": {"interest": 0.3, "lifestyle": 0.2, "values": 0.4, "age": 0.1},
+                      "age_range": [26, 33], "min_score": 0.40},
+      "acceptable_candidates": ["A1", "A2", "A3", "A4", "A5"]
+    },
+    {
+      "id": "B2", "group": "B", "age": 28,
+      "interests": ["music", "travel", "reading", "games"],
+      "lifestyle": {"morning": 0.4, "social": 0.7, "tidy": 0.5},
+      "values": {"family": 0.6, "career": 0.7, "adventure": 0.8},
+      "preferences": {"weights": {"interest": 0.2, "lifestyle": 0.3, "values": 0.4, "age": 0.1},
+                      "age_range": [25, 30], "min_score": 0.40},
+      "acceptable_candidates": ["A1", "A2", "A3", "A4", "A5"]
+    },
+    {
+      "id": "B3", "group": "B", "age": 32,
+      "interests": ["music", "movies", "travel"],
+      "lifestyle": {"morning": 0.3, "social": 0.6, "tidy": 0.4},
+      "values": {"family": 0.5, "career": 0.8, "adventure": 0.6},
+      "preferences": {"weights": {"interest": 0.3, "lifestyle": 0.2, "values": 0.4, "age": 0.1},
+                      "age_range": [27, 35], "min_score": 0.35},
+      "acceptable_candidates": ["A1", "A2", "A3", "A4", "A5"]
+    },
+    {
+      "id": "B4", "group": "B", "age": 34,
+      "interests": ["gardening", "cooking", "movies"],
+      "lifestyle": {"morning": 0.8, "social": 0.3, "tidy": 0.8},
+      "values": {"family": 0.9, "career": 0.4, "adventure": 0.3},
+      "preferences": {"weights": {"interest": 0.3, "lifestyle": 0.3, "values": 0.3, "age": 0.1},
+                      "age_range": [30, 40], "min_score": 0.40},
+      "acceptable_candidates": ["A1", "A2", "A3", "A4", "A5"]
+    },
+    {
+      "id": "B5", "group": "B", "age": 38,
+      "interests": ["games", "fishing"],
+      "lifestyle": {"morning": 0.2, "social": 0.3, "tidy": 0.3},
+      "values": {"family": 0.3, "career": 0.6, "adventure": 0.4},
+      "preferences": {"weights": {"interest": 0.2, "lifestyle": 0.2, "values": 0.2, "age": 0.4},
+                      "age_range": [30, 45], "min_score": 0.25},
+      "acceptable_candidates": ["A1", "A2", "A3", "A4", "A5"]
+    }
+  ]
+}

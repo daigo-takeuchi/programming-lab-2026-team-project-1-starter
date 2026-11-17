@@ -1,0 +1,13 @@
+{
+  "format": "f3-to-f4/1",
+  "note": "F3 の export_pairs_for_f4 と同じ形式の、F4 用の架空のサンプル。F3 のコードがなくても読み込める。実在の人物・実際の関係を表すものではない",
+  "relationship_parameters": {
+    "note": "F3 の関係継続モデルのパラメータ（参考。F4 では使わない）"
+  },
+  "pairs": [
+    {"pair_id": "GS-1", "participant_ids": ["A1", "B1"], "initial_compatibility": 0.91, "initial_satisfaction": 0.8, "matching_algorithm": "gale_shapley"},
+    {"pair_id": "GS-2", "participant_ids": ["A3", "B2"], "initial_compatibility": 0.92, "initial_satisfaction": 0.75, "matching_algorithm": "gale_shapley"},
+    {"pair_id": "GR-1", "participant_ids": ["A2", "B2"], "initial_compatibility": 0.7, "initial_satisfaction": 0.6, "matching_algorithm": "greedy"},
+    {"pair_id": "RN-1", "participant_ids": ["A4", "B5"], "initial_compatibility": 0.55, "initial_satisfaction": null, "matching_algorithm": "random"}
+  ]
+}

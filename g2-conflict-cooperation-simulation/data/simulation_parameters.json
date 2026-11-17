@@ -1,0 +1,67 @@
+{
+  "description": "G2 のシミュレーションのパラメータ。すべて教育用の架空の値で、現実の紛争の発生確率や政策効果を表しません。",
+  "simulation_years": 50,
+  "monte_carlo_runs": 100,
+  "random_seed": 2026,
+  "action_noise": 0.02,
+  "conditional": {
+    "w_preference": 0.3,
+    "w_trust": 0.4,
+    "w_opponent_history": 0.3,
+    "w_interdependence": 0.1,
+    "offset": -0.05,
+    "history_window": 5,
+    "min_probability": 0.02,
+    "max_probability": 0.95
+  },
+  "trust": {
+    "mutual_cooperation": 0.05,
+    "exploited": -0.10,
+    "exploiter": -0.03,
+    "mutual_noncooperation": -0.05,
+    "dialogue": 0.02,
+    "agreement": 0.01
+  },
+  "transition": {
+    "states": ["Cooperation", "Neutral", "Tension", "Conflict"],
+    "base": {
+      "mutual_cooperation": [[0.90, 0.08, 0.02, 0.00],
+                             [0.40, 0.50, 0.10, 0.00],
+                             [0.10, 0.45, 0.40, 0.05],
+                             [0.00, 0.10, 0.40, 0.50]],
+      "mixed":              [[0.60, 0.30, 0.10, 0.00],
+                             [0.10, 0.60, 0.28, 0.02],
+                             [0.02, 0.25, 0.63, 0.10],
+                             [0.00, 0.05, 0.35, 0.60]],
+      "mutual_noncooperation": [[0.30, 0.40, 0.28, 0.02],
+                                [0.02, 0.45, 0.45, 0.08],
+                                [0.00, 0.10, 0.70, 0.20],
+                                [0.00, 0.02, 0.28, 0.70]]
+    },
+    "trust_effect": 0.2,
+    "dialogue_effect": 0.15,
+    "agreement_effect": 0.10,
+    "dialogue_affects_transitions": true,
+    "spillover_effect": 0.2,
+    "max_shift": 0.5,
+    "external_shock_probability": 0.05,
+    "initial_state": "Neutral"
+  },
+  "tension_smoothing": 0.3,
+  "policy": {
+    "budget": 2,
+    "type": "dialogue",
+    "trust_building_bonus": 0.2,
+    "economic_cooperation_bonus": 0.3
+  },
+  "network": {
+    "type": "ring",
+    "random_edge_probability": 0.4,
+    "random_seed": 7
+  },
+  "optimization": {
+    "objective": "stability",
+    "runs": 30,
+    "years": 30
+  }
+}
