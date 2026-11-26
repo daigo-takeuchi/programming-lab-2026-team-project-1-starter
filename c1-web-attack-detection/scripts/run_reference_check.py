@@ -37,8 +37,8 @@ def load_solutions():
     return SOLUTIONS
 
 
-def build_notebook_with_solutions(solutions):
-    nb = nbformat.read(NOTEBOOK, as_version=4)
+def build_notebook_with_solutions(solutions, notebook_path=NOTEBOOK):
+    nb = nbformat.read(notebook_path, as_version=4)
     cells, used = [], set()
     for cell in nb.cells:
         cells.append(cell)
@@ -84,16 +84,17 @@ def main():
     parser = argparse.ArgumentParser(description="参照実装による Notebook の検証（教員用）")
     parser.add_argument("--save", help="実行済みのコピーを保存するパス（例：results/reference_run.ipynb）")
     parser.add_argument("--workdir", default=str(PROJECT_DIR), help="Notebook を実行するフォルダ（data/ がある場所）")
+    parser.add_argument("--notebook", default=str(NOTEBOOK), help="検証する Notebook（例：学生配布用フォルダの Notebook）。ファイルは書き換えない")
     args = parser.parse_args()
 
-    nb, used = build_notebook_with_solutions(load_solutions())
+    nb, used = build_notebook_with_solutions(load_solutions(), Path(args.notebook))
     counts, problems = run(nb, Path(args.workdir))
     print(f"参照実装を差し込んだ関数: {len(used)} 個")
     for chapter in range(4, 10):
         row = "  ".join(f"{tag} {counts[(chapter, tag)]}" for tag in TAGS)
         print(f"第{chapter}章: {row}")
     if args.save:
-        if Path(args.save).resolve() == NOTEBOOK.resolve():
+        if Path(args.save).resolve() in (NOTEBOOK.resolve(), Path(args.notebook).resolve()):
             raise SystemExit("配布用 Notebook には保存できません。")
         nbformat.write(nb, args.save)
         print("保存:", args.save, "（参照実装を含むので配布しないこと）")

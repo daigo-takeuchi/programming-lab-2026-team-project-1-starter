@@ -1,7 +1,7 @@
 # 学生配布計画
 
 採用する方式：**教員用モノレポで開発を続け、学生配布用ファイルだけを抽出する**（Phase 1 の提案を教員が採用）。
-抽出スクリプトの本格実装は Phase 5。外部リポジトリの作成・push・公開範囲の変更は、教員の指示があるまで行わない。
+抽出は `scripts/build_student_package.py`（Phase 5 で実装、許可リスト方式）。手順は `student_package_guide.md`。外部リポジトリの作成・push・公開範囲の変更は、教員が行う。
 
 ## 1. 配布するもの
 
@@ -55,9 +55,9 @@
 - **授業内の限定配布**（非公開のリポジトリ、学内の LMS、ZIP の配布）：教員の方針の範囲で配布可能と考える（ライセンス文の同梱と引用が条件）。
 - **公開 GitHub**：確認できるまで含めない。必要なら Loghub の GitHub Discussions で問い合わせる。
 
-## 4. 配布方法の手順案（Phase 5）
+## 4. 配布方法（Phase 5 で実装）
 
-1. `scripts/export_student_package.py`（Phase 5 で作成）が、上の「配布するもの」だけを `dist/c1-student/` にコピーする。
-2. 配布物の容量を確認する（目標 10〜20MB。現時点の見込みは 1MB 未満〜2MB）。
-3. 新しい Git 履歴で配布用リポジトリを作る（教員の承認後）か、ZIP にする。
-4. Colab 用の手順を README に記載する。
+- GitHub の学生配布用リポジトリ（新しい履歴）と、LMS の ZIP を併用する（教員の方針、2026-11-27）。
+- `python3 scripts/build_student_package.py --force` → `dist/c1-cybersecurity-starter/`（13 ファイル、約 321KB）と ZIP（約 77KB）。
+- 学生向けデータ辞書は `data/data_dictionary.md`、学生が実行できるテストは Notebook の【動作確認】セル（追加のテストファイルは配布しない）。
+- 詳しい手順：`docs/student_package_guide.md`。検証結果：`docs/final_validation_report.md`。

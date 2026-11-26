@@ -169,7 +169,8 @@ md("""
 | C-1E | 第0〜3章 → **第8章** → 第9章 | 8.1〜8.7 | 8.8 | 8.9〜8.10 |
 
 > **Level 1 を完了すれば、「データを読む → 数える・集計する → 閾値で異常の候補を見つける」という、
-> 基本的なセキュリティ監視プログラムが完成します。** Level 2・Level 3 は、それをより速く・より賢くする課題です。
+> 基本的なセキュリティ監視プログラムが完成します。** Level 2 では、そのプログラムを改良します。
+> その後、チームで考えた**独自の機能**を 1 つ以上作ります（0.7 と `TASKS.md` を参照）。
 
 他のチームの章も自由に読んでかまいません。Notebook を開き直したときは、第1章と 3.7 の共通関数のセルを実行してから、担当章に戻ってください。
 
@@ -203,10 +204,18 @@ md("""
 
 ## 0.7 チーム開発の進め方
 
+チーム課題は、次の 4 つの段階で進めます。**TODO をすべて埋めたら終わり、ではありません。**
+
+| 段階 | 内容 | 位置づけ |
+| --- | --- | --- |
+| 1. 基本プログラムの完成 | Level 1 の 4 課題を実装する | 必須 |
+| 2. 基本プログラムの改良 | Level 2 に取り組む（同じくらいの、チーム独自の改良でもよい） | 推奨 |
+| 3. チーム独自の機能開発 | 自分たちで問題を決めて、**独自の機能か改良を 1 つ以上**作る。難しい機能である必要はありません | 必須 |
+| 4. 評価・考察・発表 | 動作を確かめ、改良前後を比べ、意義と限界を説明する | 必須 |
+
 - まず全員で STEP 1 のデータを見て、問題を理解します。
 - Level 1 の課題を分担して実装します。**全員が少なくとも 1 つの関数を実装**してください。
-- 動作確認のセルで、全員の関数が正しく動くことを確認します。
-- Level 2・Level 3 は、チームで相談して選びます。
+- 独自の機能の例は、各テーマの章の最後（N.10）にあります。
 - 詳しくは `TASKS.md` と第9章を読んでください。
 
 ## 0.8 安全性と倫理についての注意（必ず読むこと）
@@ -277,9 +286,10 @@ code('''
 # 【教員提供コード】データフォルダの場所を決める
 # この Notebook と同じフォルダにある data/ を使う（相対パス）。
 BASE_DIR = Path.cwd()
-if not (BASE_DIR / "data").exists() and (BASE_DIR / "c1-web-attack-detection" / "data").exists():
-    # リポジトリ全体を取得して、その一番上のフォルダで実行した場合
-    BASE_DIR = BASE_DIR / "c1-web-attack-detection"
+for folder in ["c1-cybersecurity-starter", "c1-web-attack-detection"]:
+    if not (BASE_DIR / "data").exists() and (BASE_DIR / folder / "data").exists():
+        # 教材のフォルダの 1 つ上（例：Google Colab の /content）で実行した場合
+        BASE_DIR = BASE_DIR / folder
 
 DATA_DIR = BASE_DIR / "data"
 RESULTS_DIR = BASE_DIR / "results"
@@ -340,9 +350,9 @@ md("""
 | テーマ | Level 3 で使うデータ | 状態 |
 | --- | --- | --- |
 | C-1A | CIC-IDS2017（研究用の公開データ） | 準備中（なければ Tiny Dataset を使う） |
-| C-1B | Loghub OpenSSH（実サーバーの公開ログ） | 用意済み |
+| C-1B | Loghub OpenSSH（実サーバーの公開ログ） | 授業で教員から配布された場合のみ |
 | C-1C | 旧教材の人工アクセスログ | 用意済み |
-| C-1D | Loghub Linux（実サーバーの公開ログ） | 用意済み |
+| C-1D | Loghub Linux（実サーバーの公開ログ） | 授業で教員から配布された場合のみ |
 | C-1E | CIC-IDS2017（C-1A と共用） | 準備中（なければ Tiny Dataset を使う） |
 
 ## 2.2 人工データと公開データの違い
@@ -1318,7 +1328,7 @@ C1A = {
     2. 正常な通信なのに候補になってしまう（誤検出）のは、どんな場合ですか？
     3. 攻撃なのに見つけられない（検出漏れ）のは、どんな場合ですか？
 
-    **チーム独自の発展課題の例：** 時間帯ごとの通信量のグラフ、複数の条件を組み合わせた判定、検出結果のレポート出力。
+    **チーム独自の機能の例（段階 3）：** 通信元別のランキング／閾値を変えたときの結果の比較／宛先ポートの種類別の集計／時間帯別の通信回数の集計
     """,
 }
 
@@ -1370,8 +1380,8 @@ C1B = {
     "data": """\
     | Mini Dataset | Notebook の中（`auth_records`） | 8 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1b/authentication_tiny.csv` | 32 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1b/authentication_small.csv` | 525 | 公開ログ（Loghub OpenSSH）を加工 | 用意済み |
-    | （参考）全イベント | `data/c1b/ssh_events_small.csv` | 2,000 | 公開ログ（Loghub OpenSSH）を加工 | 用意済み |
+    | Small Dataset | `data/c1b/authentication_small.csv` | 525 | 公開ログ（Loghub OpenSSH）を加工 | 授業で配布された場合のみ |
+    | （参考）全イベント | `data/c1b/ssh_events_small.csv` | 2,000 | 公開ログ（Loghub OpenSSH）を加工 | 授業で配布された場合のみ |
     | Benchmark Dataset | 必要なときに生成 | 1,000〜100,000 | 人工データ | Phase 4 で準備 |
 
     **基本課題（Level 1・2）は Mini と Tiny（人工データ）で行います。** 公開ログは Level 3 で使います。
@@ -1710,11 +1720,11 @@ C1B = {
     `authentication_small.csv` は二重に数えないよう、試行 1 回につき 1 行になるように選んであります。
     `ssh_events_small.csv` は全部の行で、`event_type` は「どんな種類の記録か」の分類です（成功・失敗の分類とは別です）。
 
-    出典：Loghub（https://github.com/logpai/loghub）。ライセンス文は `data/c1b/LICENSE_LOGHUB.txt` にあります。
+    出典：Loghub（https://github.com/logpai/loghub）。公開ログは利用条件があるため、**授業の中で教員から配布された場合だけ**使えます。配布されたときは、同じフォルダにあるライセンス文（`LICENSE_LOGHUB.txt`）を読んでください。
     """,
     "small_code": small_loader("auth_small", "c1b/authentication_small.csv",
                                ["record_id", "source_line", "repeat_count"],
-                               "教員が scripts/preprocess_c1b.py で作成する",
+                               "授業で教員から配布された場合だけ使えます",
                                title="公開ログ（Loghub OpenSSH）の認証の試行"),
     "step5_extra": [
         ("### Level 1 の関数を公開ログに使ってみる\n\n"
@@ -1750,7 +1760,7 @@ C1B = {
     2. 認証に成功したログインの中から、不正なものを見つけるにはどんな情報が必要でしょうか？
     3. 閾値を厳しくしすぎると、どんな問題がありますか？
 
-    **チーム独自の発展課題の例：** 時間帯別の失敗回数のグラフ、アカウントロック機能のシミュレーション。
+    **チーム独自の機能の例（段階 3）：** 認証失敗回数のランキング／ユーザー別と接続元別の比較／複数の閾値による検出結果の比較
     """,
 }
 
@@ -1807,7 +1817,7 @@ C1C = {
     "data": """\
     | Mini Dataset | Notebook の中（`http_records`） | 8 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1c/http_requests_tiny.csv` | 32 | 人工データ | 用意済み |
-    | アクセスログ（CSV） | `data/c1c/web_access_log_synthetic.csv` | 47 | **人工データ**（旧 C1 教材の `sample_access.log` を CSV にしたもの） | 用意済み |
+    | アクセスログ（CSV） | `data/c1c/web_access_log_synthetic.csv` | 47 | **人工データ**（以前の教材のために作ったアクセスログを CSV にしたもの） | 用意済み |
     | Small Dataset（公開データ） | `data/c1c/http_requests_small.csv` | - | CSIC HTTP 2010 など | **保留**（入手方法と利用条件を確認中） |
 
     C-1C では、公開データの代わりに**人工データ**を使って発展課題まで進められるようにしています。
@@ -2101,7 +2111,7 @@ C1C = {
 
     | 項目 | 内容 |
     | --- | --- |
-    | 出典 | 旧 C1 教材のために作成した人工のアクセスログ `data/sample_access.log`（48 行）を CSV にしたもの |
+    | 出典 | 以前の教材のために作成した人工のアクセスログ（48 行）を CSV にしたもの |
     | データの種類 | **人工データ**（実在の Web サイトの記録ではない）。IP アドレスは説明用のアドレス |
     | 件数 | 47 件（形式が正しくない 1 行は除外） |
     | 正解ラベル | なし。代わりに `scenario` 列があります（作成者が意図したパターン。攻撃の答えではありません） |
@@ -2120,7 +2130,7 @@ C1C = {
     """,
     "small_code": small_loader("web_log", "c1c/web_access_log_synthetic.csv",
                                ["request_id", "source_line", "status"],
-                               "教員が scripts/preprocess_c1c.py で作成する",
+                               "data/c1c フォルダを確認してください",
                                title="人工のアクセスログ（CSV）", path_var="WEB_LOG_PATH"),
     "step5_extra": [
         ("### Level 1 の関数をアクセスログに使ってみる\n\n" + TEACHER,
@@ -2153,7 +2163,7 @@ C1C = {
     2. ルールを増やすほど、良い検出ができると言えますか？
     3. 人工データでうまくいったルールは、実際の Web サイトでもうまくいくでしょうか？
 
-    **チーム独自の発展課題の例：** ルールの種類ごとの検出件数のグラフ、パラメータ部分（`?` の後ろ）だけを調べる処理。
+    **チーム独自の機能の例（段階 3）：** 新しい判定ルールの追加／ルール別の検出件数の比較／スコア方式の改良／誤検出の分析
     """,
 }
 
@@ -2210,7 +2220,7 @@ C1D = {
     "data": """\
     | Mini Dataset | Notebook の中（`files_before` など） | 3 + 3 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1d/file_states_before_tiny.csv`、`file_states_after_tiny.csv` | 12 + 13 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1d/system_events_small.csv` | 2,000 | 公開ログ（Loghub Linux）を加工 | 用意済み |
+    | Small Dataset | `data/c1d/system_events_small.csv` | 2,000 | 公開ログ（Loghub Linux）を加工 | 授業で配布された場合のみ |
 
     **基本課題（Level 1・2）は、人工のファイル状態データ（Mini・Tiny）で行います。**
     公開されている Linux のシステムログ（Small Dataset）は**別のデータ**で、Level 3 だけで使います。
@@ -2540,10 +2550,10 @@ C1D = {
     | `event_type` | 教員がメッセージの文言で付けた大まかな種類（例：`auth_failure`、`session_opened`）。**攻撃かどうかの判定ではありません** |
     | `message` | 元のメッセージ（IP アドレスとホスト名は匿名化済み） |
 
-    出典：Loghub（https://github.com/logpai/loghub）。ライセンス文は `data/c1d/LICENSE_LOGHUB.txt` にあります。
+    出典：Loghub（https://github.com/logpai/loghub）。公開ログは利用条件があるため、**授業の中で教員から配布された場合だけ**使えます。配布されたときは、同じフォルダにあるライセンス文（`LICENSE_LOGHUB.txt`）を読んでください。
     """,
     "small_code": small_loader("system_events_small", "c1d/system_events_small.csv", ["record_id", "source_line"],
-                               "教員が scripts/preprocess_c1d.py で作成する",
+                               "授業で教員から配布された場合だけ使えます",
                                title="公開ログ（Loghub Linux）のシステムイベント"),
     "step5_tasks": """
     - **プロセス別のイベント数**：`process_name` ごとにイベントを数え、普段と違うものを探す。
@@ -2562,7 +2572,7 @@ C1D = {
     2. 正常な作業（ソフトウェアの更新など）でも、たくさんのファイルが変わります。異常と区別するには何が必要ですか？
     3. 集合を使うと速くなるのはなぜですか？ 自分の言葉で説明してください。
 
-    **チーム独自の発展課題の例：** 拡張子ごとの変更件数の集計、変更レポートの出力。
+    **チーム独自の機能の例（段階 3）：** ファイルの変化の履歴の表示／ファイルの種類（拡張子）別の変化の集計／3 つ以上の時点のファイル状態の比較
     """,
 }
 
@@ -2904,7 +2914,7 @@ C1E = {
     2. 少しずつ長い時間をかけて持ち出された場合、この方法で見つけられますか？
     3. C-1A（回数）と C-1E（量）の両方を使うと、どんな利点がありますか？
 
-    **チーム独自の発展課題の例：** 通信元別の送信量のグラフ、時間帯別の送信量の変化、レポート出力。
+    **チーム独自の機能の例（段階 3）：** 送信量のランキング／通信元ごとに違う閾値を使う判定／送信量の時間的な変化の分析
     """,
 }
 

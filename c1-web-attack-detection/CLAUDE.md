@@ -19,7 +19,7 @@
 
 - 対象テーマ：C-1A ネットワーク探索・異常通信／C-1B 不正認証／C-1C Web・API 不正アクセス／C-1D 不正操作・システム改変／C-1E 情報流出。
   C-1F は C-2 と重複するため**含めない**。
-- 学生の主な配布物：`C1_cybersecurity_starter.ipynb`（全5テーマ統合、全10章）＋ `data/` ＋ README.md ＋ TASKS.md。
+- 学生の配布物：`scripts/build_student_package.py` が**許可リスト方式**で `dist/c1-cybersecurity-starter/` と ZIP を作る（README、TASKS、Notebook、requirements、data の README・データ辞書、人工データの CSV 7 個）。`README.md`・`TASKS.md`・`data/README.md`・`data/data_dictionary.md`・`requirements.txt` は**学生向けの文書**なので、教員用の情報（スクリプト、docs、旧教材、解答）を書かない。手引きは `docs/student_package_guide.md`。
 
 ## 既存プロジェクトの改訂方針
 
@@ -73,14 +73,14 @@
 ## ストレージ・依存関係
 
 - 次の作業は事前に教員の承認を得る：**100MB を超える新規データの取得**（Phase 2A 以降のルール）、PCAP の取得、大規模な依存パッケージの追加。
-- **Windows 側 C: ドライブの空きは 2.3GB**（2026-11-27）。新しい仮想環境・ライブラリは原則として追加しない。WSL の仮想ディスクも C: 上にあるため、Linux 側の空き表示（926GB）は実際には使えない。展開時の一時ファイルを含めた最大使用量を考える。
+- **Windows 側 C: ドライブの空きは 1.8GB**（2026-11-27、Phase 5 終了時）。拡張機能の自動更新のほか、テストの一時ファイルで WSL の仮想ディスク（vhdx）が広がる可能性がある（vhdx は自動では縮まない）。テストの繰り返し実行は必要な回数にとどめる。新しい仮想環境・ライブラリは原則として追加しない。WSL の仮想ディスクも C: 上にあるため、Linux 側の空き表示（926GB）は実際には使えない。展開時の一時ファイルを含めた最大使用量を考える。
 - CIC 系データのフォームの奥のディレクトリを直接たどるなど、アクセス制限を回避する操作はしない。
 - 開発用の Python 環境はこのディレクトリの `.venv/`（Git 管理外、`requirements-dev.txt`）。グローバル環境や他プロジェクトの仮想環境を変更しない。
 - CIC 系データのダウンロードには氏名・メールアドレス等の登録フォームがある。**Claude が教員の個人情報をフォームに送信しない。**教員が手動で行う。
 
 ## Git
 
-- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ（Phase 1：`df5a1dc`、Phase 1.5・2A：`6b2ff9d`。Phase 3・4 は未コミット）。
+- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ（Phase 1：`df5a1dc`、Phase 1.5・2A：`6b2ff9d`、Phase 3・4：`e87c01b`。Phase 5 は未コミット）。
 - 承認なしに行わない：push、マージ、`reset --hard`、`git clean`、履歴の書き換え、force push、ブランチ・タグの削除、リモート設定・リポジトリ名・公開範囲の変更、外部リポジトリの作成。
 - 親リポジトリの `.gitignore` は `*.log` と `textbook/**/*.py` を除外している点に注意。
 
