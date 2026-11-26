@@ -6,7 +6,7 @@
 
 | 項目 | 結果 |
 | --- | --- |
-| 絶対パス | `/home/daigo/Programming_Lab_2026/programming-lab-2026-team-project-1-starter/c1-web-attack-detection` |
+| 場所 | 親リポジトリ `programming-lab-2026-team-project-1-starter` の直下の `c1-web-attack-detection/` |
 | Git リポジトリのルート | 親ディレクトリ `programming-lab-2026-team-project-1-starter`（A1〜G2 の 24 トピックを含むモノレポ） |
 | 調査時のブランチ | `main`（`origin/main` と同期） |
 | 未コミット変更・未追跡ファイル | なし（`git status` がクリーン） |
