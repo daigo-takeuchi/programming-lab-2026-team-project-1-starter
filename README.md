@@ -40,11 +40,22 @@ Programming Lab 2026 の Team Project 1 で使う starter code（研究の出発
 
 | Topic | テーマ名 | ディレクトリ | 主なアルゴリズム | README |
 | --- | --- | --- | --- | --- |
-| C1 | Web サーバーへのサイバー攻撃の検出 | `c1-web-attack-detection/` | 線形探索・辞書（ハッシュ）による集計 | [README](c1-web-attack-detection/README.md) |
+| C1 | サイバー攻撃の検出 ― ネットワーク・Web・API・システムを対象としたセキュリティ監視システムの開発 | `c1-web-attack-detection/` | 探索・集計（リスト・辞書・集合）、文字列処理、閾値による検出 | [README](c1-web-attack-detection/README.md) |
 | C2 | サイバー攻撃・障害に強いネットワーク構造の設計 | `c2-network-resilience/` | BFS・DFS | [README](c2-network-resilience/README.md) |
 | C3 | RSA 暗号の仕組みと計算量 | `c3-rsa-cryptography/` | ユークリッドの互除法・拡張ユークリッド法・べき乗剰余 | [README](c3-rsa-cryptography/README.md) |
 | C4 | ブロックチェーンの仕組みと計算量 | `c4-blockchain-algorithms/` | SHA-256・Merkle Tree | [README](c4-blockchain-algorithms/README.md) |
 | C5 | EC サイトの商品検索・在庫管理 | `c5-ecommerce-search-inventory/` | 線形探索・二分探索・ソート | [README](c5-ecommerce-search-inventory/README.md) |
+
+**C1 について：** C1 は、5 つのサブトピックを 1 つの Notebook（[`c1-web-attack-detection/C1_cybersecurity_starter.ipynb`](c1-web-attack-detection/C1_cybersecurity_starter.ipynb)）にまとめた教材です。**チームは担当する 1 テーマだけ**に取り組みます。
+
+- C-1A：ネットワーク探索・異常通信の検出
+- C-1B：不正認証・アカウント悪用の検出
+- C-1C：Web・APIへの不正アクセスの検出
+- C-1D：不正操作・システム改変の検出
+- C-1E：情報流出・異常データ転送の検出
+
+学習の流れは、① 基本プログラムの完成（Level 1、必須）→ ② アルゴリズム・検出方法の改良（Level 2、推奨）→ ③ チーム独自の機能開発（必須）→ ④ 評価・成果発表 です。
+始め方は [C1 の README](c1-web-attack-detection/README.md)、課題と評価は [TASKS.md](c1-web-attack-detection/TASKS.md) を読んでください。Level 1・2 は Python の標準ライブラリだけで動き、教科書サンプルコードは不要です。
 
 ### Team D：社会インフラ・最適化
 
@@ -88,7 +99,7 @@ Programming Lab 2026 の Team Project 1 で使う starter code（研究の出発
 | A4 | キューの実装方式と処理性能の比較 | ★★☆☆☆ | ★★☆☆☆ | ★★☆☆☆ |
 | B1 | ルービックキューブの解法アルゴリズムと計算量の比較 | ★★★★☆ | ★★☆☆☆ | ★★★☆☆ |
 | B2 | ジグソーパズルの解法と計算量 | ★★★☆☆ | ★★★☆☆ | ★★★☆☆ |
-| C1 | Web サーバーへのサイバー攻撃の検出 | ★★☆☆☆ | ★★☆☆☆ | ★★★☆☆ |
+| C1 | サイバー攻撃の検出（担当する 1 テーマ）※3 | ★★☆☆☆ | ★★☆☆☆ | ★★★☆☆ |
 | C2 | サイバー攻撃・障害に強いネットワーク構造の設計 | ★★★☆☆ | ★★☆☆☆ | ★★★☆☆ |
 | C3 | RSA 暗号の仕組みと計算量 | ★★★★☆ | ★★☆☆☆ | ★★★☆☆ |
 | C4 | ブロックチェーンの仕組みと計算量 | ★★★☆☆ | ★★☆☆☆ | ★★★☆☆ |
@@ -109,6 +120,7 @@ Programming Lab 2026 の Team Project 1 で使う starter code（研究の出発
 
 ※1 F5 の難易度は、選んだテーマによって大きく変わります。表の値は、教科書レベルのアルゴリズム 2 種類を比較する最小構成の場合です。
 ※2 G1・G2 は補遺トピックです（14 章）。
+※3 C1 は Core Research の代わりに、Level 1（必須）とチーム独自の機能開発（必須）を基準にしています。5 テーマのどれを選んでも、作業量はほぼ同じになるように作っています。
 
 ### この表の読み方
 

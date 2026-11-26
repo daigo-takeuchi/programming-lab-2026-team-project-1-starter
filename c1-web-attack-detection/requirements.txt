@@ -1,0 +1,9 @@
+# C-1 Cybersecurity Programming Starter：学生用の依存ライブラリ
+#
+# Level 1・Level 2 の課題と動作確認は、Python の標準ライブラリだけで実行できます。
+#
+# ipykernel：VS Code で Notebook を実行するために必要です（VS Code が自動でインストールを提案することもあります）。
+#            Google Colab では不要です。
+# matplotlib：グラフを表示するために使います。なくても、結果は文字で表示されます。
+ipykernel>=6.29
+matplotlib>=3.7

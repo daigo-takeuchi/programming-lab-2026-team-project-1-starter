@@ -23,3 +23,32 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# ---- C-1 統合教材（Phase 1 で追加）----
+# 秘密情報
+.env
+.env.*
+
+# 公開データの原データ・中間ファイル（Git に入れない。docs/dataset_sources.md の手順で取得する）
+data/raw/
+data/interim/
+*.zip
+*.tar.gz
+*.pcap
+*.pcapng
+
+# 実行結果（results/ の中身は各自の環境で作る。.gitkeep だけ追跡する）
+results/*
+!results/.gitkeep
+
+# 教員用の完成解答（学生に配布しない）
+solutions/
+*_solution.ipynb
+*_solutions.py
+
+# ---- Phase 2A：Loghub 由来の前処理済み CSV ----
+# 公開 GitHub での再配布の可否が確認できるまで、Git で管理しない（docs/student_distribution_plan.md）。
+# 再生成：python3 scripts/download_datasets.py && python3 scripts/preprocess_c1b.py && python3 scripts/preprocess_c1d.py
+data/c1b/authentication_small.csv
+data/c1b/ssh_events_small.csv
+data/c1d/system_events_small.csv
