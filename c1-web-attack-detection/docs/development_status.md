@@ -1,107 +1,112 @@
 # 開発状況
 
-最終更新：2026-11-26（Phase 1 終了時）
-現在の Phase：**Phase 1 完了 → 教員の確認待ち**（Phase 2 には未着手）
+最終更新：2026-11-26（Phase 1.5・Phase 2A 終了時）
+現在の状態：**Phase 1.5・2A 完了 → 教員の確認待ち**（Phase 2B は教員のデータ取得待ち。Phase 3 は未着手）
 
 ## 1. 開発環境
 
 | 項目 | 内容 |
 | --- | --- |
 | 作業ディレクトリ | `/home/daigo/Programming_Lab_2026/programming-lab-2026-team-project-1-starter/c1-web-attack-detection` |
-| OS | Ubuntu 24.04.4 LTS on WSL2（kernel 6.18.58.1-microsoft-standard-WSL2） |
-| Python | 3.12.3（`/usr/bin/python3`）。シェルの既定の `python3` は別プロジェクトの仮想環境（`~/AI_programming_2026/.venv`）を指していたため、**使用・変更していない** |
-| 開発用仮想環境 | `c1-web-attack-detection/.venv`（Git 管理外）：nbformat 5.11.1、nbclient 0.11.0、ipykernel 7.4.0、matplotlib 3.11.2 |
-| Git | 2.43.0。ブランチ `feature/c1-integrated-starter`（`main` の `e3f993e` から作成）。**Phase 1 の変更は未コミット** |
-| ディスク | WSL（Linux 側）：空き 926GB。**Windows C: ドライブ：空き 6.2GB（使用率 98%）** |
-| 日本語フォント | IPAexGothic などが利用可能（グラフの日本語表示を確認） |
+| OS | Ubuntu 24.04.4 LTS on WSL2 |
+| Python | 3.12.3（`/usr/bin/python3`）。シェルの既定の `python3` は別プロジェクトの仮想環境なので使わない |
+| 開発用仮想環境 | `.venv`（Git 管理外）：nbformat 5.11.1、nbclient 0.11.0、ipykernel 7.4.0、matplotlib 3.11.2。今回は追加なし |
+| Git | ブランチ `feature/c1-integrated-starter`。Phase 1 は `df5a1dc` でコミット済み。**Phase 1.5・2A の変更は未コミット**。push していない |
+| ディスク | **Windows C: の空きは 2.6GB**（Phase 1 時点の 6.2GB から減少）。今回の作業で増えたのは約 2MB（原データ 1.1MB を含む） |
 
-## 2. 実装済み事項
+## 2. Phase 1.5 で行ったこと
 
-| 項目 | ファイル |
+| 項目 | 内容 |
 | --- | --- |
-| 既存プロジェクトの監査 | `docs/existing_project_audit.md` |
-| 移行計画 | `docs/migration_plan.md` |
-| 開発ルール | `CLAUDE.md` |
-| 仕様書・開発計画・前処理方針 | `docs/project_specification.md`、`implementation_plan.md`、`preprocessing_policy.md` |
-| データセット調査 | `docs/dataset_feasibility_report.md`、`dataset_sources.md`、`data_dictionary.md` |
-| 統合 Notebook の骨格（全10章、日本語） | `C1_cybersecurity_starter.ipynb`（Markdown 194 セル、コード 92 セル、出力なし、約 195KB）、生成元 `scripts/build_notebook.py` |
-| Mini Dataset（5 テーマ） | Notebook 内（C-1A 9 件、C-1B 8 件、C-1C 8 件、C-1D 3+3 件と状態 3+3 件、C-1E 6 件） |
-| Tiny Dataset（5 テーマ、6 ファイル、合計約 11KB） | `data/c1a〜c1e/*_tiny.csv`、生成 `scripts/generate_synthetic_data.py` |
-| データ品質検証 | `scripts/validate_datasets.py` |
-| 共通関数 | Notebook 第3章 `load_csv`、`show_records`、`check`／第9章 `measure_time`、`evaluate_detection` |
-| Level 1 の学生課題（関数のひな形・ヒント 3 段階・動作確認） | 各テーマ 4 関数、合計 20 関数 |
-| Level 2 の学生課題（ひな形・動作確認） | C-1A 3、C-1B 3、C-1C 2、C-1D 3、C-1E 2 関数 |
-| テスト | `tests/test_notebook.py`、`tests/test_synthetic_data.py`、`tests/__init__.py` |
-| 学生向け文書（草案） | `README.md`、`TASKS.md`、`data/README.md` |
-| 依存関係 | `requirements.txt`（matplotlib のみ、任意）、`requirements-dev.txt` |
+| 学習ルート | 第0章 0.5 を「学習ルート」に変更。全体の順番の表と、テーマ別に実行する章・Level ごとの節番号の表。「Level 1 で基本的な監視プログラムが完成する」と明記 |
+| 編集するセルの明示 | 0.6 に「編集するのは【学生実装課題】のセルだけ」と、1 つの課題の並び（説明 → 実装 → ヒント → 動作確認）を追加 |
+| 各章の冒頭 | テーマ章の最初に「この章の進め方」の表（N.1〜N.4 は読む、N.5〜N.7 が Level 1 など。N.2 は最初は表だけでよい） |
+| ヒント | 3 段階・折りたたみ（`<details>`）を維持。折りたたみが使えない環境ではそのまま表示されることと、読み方を 0.6 に追加 |
+| C-1C の難易度 | 課題3 を `contains_pattern(url, pattern)`（`in` 1 つで終わる）から **`contains_any_pattern(url, patterns)`**（for 文と早期 return）に変更。最も難しかった「どれか 1 つでも」の判定を独立した小課題にし、課題4 は 2 つの条件を `or` でつなぐだけにした |
+| C-1D の難易度 | 課題4 の戻り値に **`"kept"`（変更前後の両方にあるファイル）** を追加。新しい for 文を 1 つ書く必要があり、Level 2 のハッシュ比較の対象にもつながる。課題の数は 4 のまま |
+| C-1A と C-1E の違い | C-1A の 4.1 に「C-1E は量、C-1A は回数と種類」を追加（C-1E 側と第0章には既にあり） |
+| C-1B の区別 | STEP 3 の冒頭に「認証の失敗 ≠ 不正認証、不正なログインは成功として記録される」を追加 |
+| 生成方式 | `build_notebook.py` を教員用マスターと明記。**実行結果が残っている Notebook への上書きを拒否**（`--force` で強制、`--output` で別ファイル）。セル ID を連番で固定し、再生成しても同じ内容になるようにした |
+| 情報量の確認 | 各章の安全上の注意は、章を単独で使うために残した。Level 1 に不要な専門知識は N.2 の表に限っており、削る必要はないと判断。説明・仕様・ヒント・テストは削除していない |
 
-## 3. 部分的に実装済みの事項
+Notebook：**Markdown 196 セル、コード 94 セル**（Phase 1 は 194・92）。
 
-- **Level 3**：課題の説明と Small Dataset の読み込みセル（ファイルがない場合はメッセージを表示）のみ。分析用の教員提供コードは Phase 3。
-- **実行時間の比較**：第9章に `measure_time` と、リスト vs 集合の例（教員提供）。各テーマの基本版 vs 改良版の比較セルは Phase 4。
-- **TASKS.md**：提出物・期限・発表時間は【教員記入】のまま。
-- **旧教材**：維持しているが、新教材との統合（`log_parser` の取り込み等）は Phase 3。
+## 3. Phase 2A の結果
 
-## 4. 未実装事項
+詳細は `preprocessing_report.md`。
 
-- Small Dataset（全テーマ）、`scripts/download_datasets.py`、`scripts/preprocess_c1a〜c1e.py`
-- Benchmark Dataset の生成
-- 各テーマの Tiny Dataset での [OK]/[NG] 判定セル（現在は結果の表示のみ）
-- 教員用の完成解答（`solutions/`）
-- `docs/preprocessing_report.md`、`docs/final_validation_report.md`
+| | C-1B | C-1C | C-1D |
+| --- | --- | --- | --- |
+| 原データ | Loghub OpenSSH_2k | `data/sample_access.log` | Loghub Linux_2k |
+| データの種類 | 公開ログ（実運用） | 人工データ（旧教材） | 公開ログ（実運用） |
+| 原データの件数 | 2,000 行 | 48 行 | 2,000 行 |
+| 出力 | `authentication_small.csv` 525 行・14 列・77,935 B／`ssh_events_small.csv` 2,000 行・11 列・269,725 B | `web_access_log_synthetic.csv` 47 行・9 列・4,033 B | `system_events_small.csv` 2,000 行・11 列・258,508 B |
+| 前処理 | 認証試行の行だけを抽出（二重計数を防ぐ）、IP・ホスト名・実アカウントの匿名化、年なしの日付 | 旧パーサーで変換、形式エラー 1 行を除外、作成者の意図を `scenario` 列に | イベントの種類の付与、IP・ホスト名の匿名化、年なしの日付 |
+| 正解ラベル | なし（`unknown`） | なし（`scenario` は攻撃ラベルではない） | なし（`unknown`） |
+| 学生配布 | 授業内の限定配布は可能と判断（ライセンス文の同梱）。公開 GitHub は未確認 → **Git 管理外** | 可（Git 管理対象） | C-1B と同じ |
+| 未確認事項 | 公開 GitHub での再配布の可否 | なし | 同左 |
 
-## 5. 未確認事項
+Notebook の 5.4・5.9、6.4・6.9、7.4・7.9 に、出典・種類・件数・列の意味・制約・人工データとの違い・ラベルの有無・使い方を追加した。
+C-1B と C-1C では、学生が作った Level 1 の関数をそのまま公開ログ・人工ログに使う教員提供セルを追加した。
 
-- CIC-IDS2017 の zip 容量・列名・再配布可否／CSIC HTTP 2010 の入手経路と利用条件／CIC-Bell-DNS-EXF-2021 の列名（`dataset_feasibility_report.md` 7 章）
-- Google Colab・Windows ネイティブ・Python 3.11/3.13 での実行（今回は WSL の Python 3.12.3 のみで確認）
-- 学生の実際の作業時間（難易度レビューの時間は見積もり）
+## 4. 実装済み／未実装／未確認
 
-## 6. テスト結果（Phase 1）
+### 実装済み（Phase 1 以降の累計）
+
+統合 Notebook（全10章）、Mini・Tiny Dataset、データ生成・検証、Level 1（20 関数）・Level 2（13 関数）のひな形と動作確認、Phase 2A の前処理 3 本と取得スクリプト、文書一式。
+
+### 部分的に実装済み
+
+- Level 2：ヒントなし。実行時間の比較セルなし（第9章の `measure_time` のみ）。
+- Level 3：説明、データの読み込み、一部の適用例のみ。
+- `TASKS.md`：【教員記入】が残っている。
+
+### 未実装
+
+- C-1A・C-1E の公開データ（Phase 2B）、Benchmark Dataset（Phase 4）、Tiny Dataset での [OK]/[NG] 判定（Phase 3）、教員用の完成解答（Phase 3）、配布物の抽出スクリプト（Phase 5）、`final_validation_report.md`（Phase 5）。
+
+### 未確認
+
+- CIC-IDS2017：登録後のファイル構成・容量・列名・通信方向の定義・再配布条件。
+- Loghub：公開 GitHub での再配布の可否。
+- Google Colab、Windows ネイティブ、Python 3.11/3.13 での実行。
+- 学生の実際の作業時間（すべて見積もり）。
+
+## 5. テスト結果（2026-11-26）
 
 | テスト | 実行方法 | 結果 |
 | --- | --- | --- |
-| 全テスト | `.venv/bin/python -m unittest discover -s tests -t .` | **36 件すべて成功** |
-| 　うち旧教材の回帰テスト | `test_parser.py`、`test_detection.py` | 17 件成功（改訂前と同じ） |
-| 　Notebook の構造 | `test_notebook.TestStructure`（10 章、全テーマに N.1〜N.10、セルの表示、Level 1 が 3〜5 関数、ひな形に解答がない、絶対パスなし、他テーマへの依存なし） | 8 件成功 |
-| 　Notebook の実行 | `test_notebook.TestExecution`：全体の一括実行（未実装のまま）、テーマごとの独立実行（第0〜3章＋1 章、そのテーマのデータだけ）、data フォルダなしでの実行 | 3 件成功（独立実行は 5 テーマとも成功） |
-| 　人工データ | 再生成との一致、品質検証、意図した特徴（境界例・誤検出例など） | 8 件成功 |
-| 旧 README のコマンド | `/usr/bin/python3 -m unittest discover -s tests -v`（nbclient なし） | 36 件成功（実行テスト 3 件はスキップ） |
-| データ品質検証 | `python3 scripts/validate_datasets.py` | 6 ファイルすべて OK |
-| 期待値の検証（リポジトリ外） | 一時的な参照実装を Notebook に差し込んで実行 | テーマの動作確認 72 件すべて [OK]。参照実装はリポジトリに含めていない |
-| 旧教材の実行 | `python3 starter.py`、`python3 benchmark.py` | 成功（`textbook/ssearch_while.py` がある環境） |
+| 全テスト（教員環境） | `.venv/bin/python -m unittest discover -s tests -t .` | **51 件すべて成功** |
+| 　旧教材の回帰テスト | `test_parser`、`test_detection` | 17 件成功 |
+| 　Notebook の構造 | 10 章、N.1〜N.10、表示、Level 1 が 3〜5 関数、ひな形に解答がない、絶対パスなし、他テーマへの依存なし | 8 件成功 |
+| 　Notebook の生成 | 再生成した結果がリポジトリの Notebook と一致する／実行結果のある Notebook を上書きしない | 2 件成功（新規） |
+| 　Notebook の実行 | 一括実行、テーマ別の独立実行、**Small Dataset がない場合のテーマ別実行**（新規）、data フォルダなし | 4 件成功 |
+| 　人工データ | 再生成の一致、品質検証、意図した特徴 | 8 件成功 |
+| 　前処理（新規） | C-1B/C/D の再生成の一致、生の IP が残っていない、label が unknown、result と label の区別、試行行だけの抽出、元の行番号、ライセンス文の同梱、年を付けていない、人工データの命名、旧パーサーとの件数の一致 | 12 件成功 |
+| nbformat のないシステムの Python | `/usr/bin/python3 -m unittest discover -s tests -v` | 45 件成功、6 件スキップ（Notebook の実行・生成） |
+| データ品質検証 | `python3 scripts/validate_datasets.py` | 10 ファイル OK（警告 1 件：`-- root`） |
+| 期待値の検証（リポジトリ外） | 一時的な参照実装を差し込んで Notebook を実行 | テーマの動作確認 **76 件すべて [OK]**、公開ログへの適用セルも動作 |
 
-## 7. 難易度レビュー（見積もり）
+失敗したテスト：なし。途中で見つかった問題（Notebook のセル ID が毎回変わる、`com.jcraft.jsch.JSchException` などのプロセス名・クラス名が匿名化される、空白で始まるユーザー名の解析エラー）は修正済み。
+
+## 6. 難易度の評価（見積もり。Phase 1.5 後）
 
 | | C-1A | C-1B | C-1C | C-1D | C-1E |
 | --- | --- | --- | --- | --- | --- |
-| 最初の問題 | 通信元のレコードを取り出す | 失敗レコードを取り出す | URL の文字数 | ファイルがあるか調べる | 通信元のレコードを取り出す |
-| 必要な文法 | for、if、append、タプル | for、if、`and` | `len`、`in`、for、`or` | for、if、早期 return、`not` | for、if、`+=` |
-| 必要な専門知識 | IP・ポート（表で説明） | 認証・成功／失敗 | URL・パラメータ | ファイル・ハッシュ（概念のみ） | バイト・送信元／先 |
-| Level 1 の課題数 | 4 | 4 | 4 | 4 | 4 |
-| 実装の分量（推定） | 各 3〜8 行、計 約 25 行 | 計 約 25 行 | 計 約 20 行（課題4 が最も複雑） | 計 約 20 行 | 計 約 25 行 |
-| 想定時間（見積もり） | 2〜3 時間 | 2〜3 時間 | 2〜3 時間 | 1.5〜2.5 時間 | 2〜3 時間 |
-| Level 2 | 辞書・集合（ポート種類数） | 辞書・入れ子の辞書・集合 | ルールのリスト・スコア・`lower()` | 集合・辞書（ハッシュ） | 辞書（2 種類の集計） |
-| つまずきやすい点 | タプルの分解、「以上」と「より大きい」、重複のない一覧 | 失敗 0 回のユーザーも含める | 課題4 の「どれか 1 つでも」（フラグ変数） | ループ内で `return False` してしまうバグ | CSV の数値を整数にする（教員提供の `load_csv` で対応済み） |
-| 教員の補足が必要な点 | ポート番号の意味 | `result` は攻撃ラベルではないこと | 攻撃文字列を実行しないこと | 疑似ハッシュと本物のハッシュの違い | 回数（C-1A）と量（C-1E）の違い |
+| 最初の問題 | 通信元で絞り込む | 失敗を取り出す | URL の文字数 | ファイルがあるか | 通信元で絞り込む |
+| 新しく書く for 文の数（Level 1） | 4 | 4 | 3 | 4 | 4 |
+| 最も難しい課題 | 課題3（重複のない一覧） | 課題3（失敗 0 回も含める） | 課題3（早期 return） | 課題1・4（早期 return、kept） | 課題3（重複のない一覧） |
+| 想定時間 | 2〜3 時間 | 2〜3 時間 | 2〜3 時間 | 2〜3 時間 | 2〜3 時間 |
 
-**評価：**
-- 専門知識なしで開始できる（各章 N.2 の表で必要な用語のみ説明）。Mini Dataset はすべて手計算で確認できる大きさ。
-- Level 1 だけで「データ → 集計 → 閾値 → 候補の表示」まで動く検出プログラムになる。Tiny Dataset への適用セルで確認できる。
-- 公開データがなくても Level 1・2 は完了できる（data フォルダなしでも Notebook は止まらない）。
-- テーマ間の難易度の差は小さい。C-1D がやや易しく、C-1C 課題4 がやや難しい。
+C-1C 課題4 の難しさを課題3 に分けて下げ、C-1D 課題4 の分量を上げたことで、テーマ間の差は Phase 1 より小さくなった。
 
-**調整の提案（Phase 3 で判断）：**
-1. C-1C 課題4 を「1 件の URL が怪しいかを判定する `is_suspicious_url()`」と「リクエスト全体に適用する関数」に分ける（課題が 5 つになる）。
-2. C-1D に「内容が変更されたファイル」を Level 1 の任意課題として追加し、他テーマと分量をそろえる。
-3. C-1C の Level 2 は計算量の比較が弱いため、「ルール数 R と URL 数 N を増やしたときの実行時間」を Phase 4 のベンチマークに入れる。
+## 7. 既知の制約
 
-## 8. 既知の制約
+- Notebook は `build_notebook.py` から生成する。学生が編集した Notebook には上書きしない。
+- Loghub 由来の CSV は Git 管理外。新しい環境では `download_datasets.py` → 前処理スクリプトの順に実行する。
+- Loghub のログには年がない。OpenSSH は成功ログインが 1 行のみ。Linux にファイル変更の記録はない。
+- 旧教材（`detection.py` 等）は Git 管理外の教科書コードがないと動かない（改訂前からの制約）。
 
-- Notebook は `scripts/build_notebook.py` から生成している。ipynb を直接編集すると次の生成で上書きされる。
-- Loghub OpenSSH_2k には成功ログインが 1 行しかない。「失敗の後の成功」は人工データで扱う。
-- 旧教材（`detection.py` 等）は、Git 管理外の教科書コードがないと動かない（改訂前からの制約）。
-- 親リポジトリ README の C1 の説明は旧教材のまま（変更していない）。
+## 8. 次にやること
 
-## 9. 次の Phase で必要な作業
-
-`implementation_plan.md` の Phase 2 と「教員の判断が必要な事項」を参照。
+`implementation_plan.md` の「教員の判断が必要な事項」と、Phase 3 の作業一覧を参照。

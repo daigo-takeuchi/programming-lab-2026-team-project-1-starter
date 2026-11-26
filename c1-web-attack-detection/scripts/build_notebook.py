@@ -1,14 +1,20 @@
-"""統合 Notebook（C1_cybersecurity_starter.ipynb）を生成するスクリプト
+"""統合 Notebook（C1_cybersecurity_starter.ipynb）を生成するスクリプト（教員用マスター）
 
-Notebook の内容は、このスクリプトの中に Python の文字列として書いてある。
-Notebook を直接編集すると、次にこのスクリプトを実行したときに上書きされるので注意すること。
-（Phase 3 以降に Notebook を直接編集する運用へ切り替える場合は、docs/development_status.md に記録する。）
+- Notebook の内容は、このスクリプトの中に Python の文字列として書いてある。
+  教材を直すときは、このスクリプトを直してから Notebook を再生成する（ipynb を直接編集しない）。
+- 生成した Notebook は、学生に配布した後は**学生が直接編集する成果物**になる。
+  学生が編集した Notebook に、このスクリプトで上書きしてはいけない。
+  そのため、出力先の Notebook に実行結果（outputs）が残っている場合は、上書きを拒否する（--force で強制）。
+- このスクリプトは学生への配布物に含めない（docs/student_distribution_plan.md）。
 
 使い方（c1-web-attack-detection ディレクトリで実行する）:
-    python scripts/build_notebook.py
+    .venv/bin/python scripts/build_notebook.py                 # 教員用マスターを再生成する
+    .venv/bin/python scripts/build_notebook.py --output x.ipynb  # 別のファイルに書き出す
 
 必要なライブラリ: nbformat（教員の開発環境のみ。学生には不要）
 """
+
+import argparse
 
 import textwrap
 from pathlib import Path
@@ -72,10 +78,12 @@ md("""
 
 **C-1 Cybersecurity Programming Starter**（プログラミング演習Ⅰ チーム開発課題）
 
-> **この Notebook の状態（Phase 1：骨格版）**
+> **この Notebook の状態（開発中の骨格版）**
 > 章の構成、データ、課題の設計、関数のひな形（TODO）、動作確認のしくみを用意しています。
-> 一部の教員提供コード（実行時間の比較、グラフ、Small Dataset など）は、今後の Phase で追加します。
-> 「Phase 2 以降で追加予定」と書かれている部分は、まだ実行できなくても問題ありません。
+> 一部の教員提供コード（実行時間の比較、C-1A・C-1E の公開データなど）は、今後追加します。
+> 「追加予定」と書かれている部分は、まだ実行できなくても問題ありません。
+
+**最初にすること：** 第0章の「0.5 学習ルート」を読み、自分のチームが実行する章を確認してください。
 """)
 
 md("""
@@ -136,14 +144,33 @@ md("""
 4. **STEP 4：アルゴリズムを改良する**（Level 2）
 5. **STEP 5：実データで評価・発展させる**（Level 3）
 
-## 0.5 この Notebook の使い方
+## 0.5 学習ルート（担当テーマ別）
 
-1. **全チーム共通**：第0章〜第3章を上から順に実行します。
-2. **担当テーマ**：自分のチームの章だけを実行します。他のテーマの章を実行する必要はありません。
-   - 例：C-1D 担当のチームは「第0章〜第3章 → 第7章」を実行します。
-3. **まとめ**：第9章で、実行時間の比較・評価・発表の準備をします。
+**全5テーマを順番に実行する必要はありません。** 次の順に進めてください。
 
-他のチームの章も自由に読んでかまいません。
+| 順番 | 内容 | 場所 | 必須？ |
+| ---: | --- | --- | --- |
+| 1 | 演習の目的と進め方 | 第0章 | 必須 |
+| 2 | 実行環境の準備 | 第1章 | 必須 |
+| 3 | データセットの概要 | 第2章 | 必須 |
+| 4 | Python の基本操作と共通関数 | 第3章 | 必須（3.7 の共通関数のセルは必ず実行） |
+| 5 | 担当テーマの **Level 1**（STEP 1〜3） | 担当章の N.1〜N.7 | **必須** |
+| 6 | 担当テーマの **Level 2**（STEP 4） | 担当章の N.8 | 推奨 |
+| 7 | 担当テーマの **Level 3**（STEP 5） | 担当章の N.9〜N.10 | 選択 |
+| 8 | 評価と成果発表 | 第9章 | 必須 |
+
+| 担当テーマ | 実行する章 | Level 1 の範囲 | Level 2 | Level 3 |
+| --- | --- | --- | --- | --- |
+| C-1A | 第0〜3章 → **第4章** → 第9章 | 4.1〜4.7 | 4.8 | 4.9〜4.10 |
+| C-1B | 第0〜3章 → **第5章** → 第9章 | 5.1〜5.7 | 5.8 | 5.9〜5.10 |
+| C-1C | 第0〜3章 → **第6章** → 第9章 | 6.1〜6.7 | 6.8 | 6.9〜6.10 |
+| C-1D | 第0〜3章 → **第7章** → 第9章 | 7.1〜7.7 | 7.8 | 7.9〜7.10 |
+| C-1E | 第0〜3章 → **第8章** → 第9章 | 8.1〜8.7 | 8.8 | 8.9〜8.10 |
+
+> **Level 1 を完了すれば、「データを読む → 数える・集計する → 閾値で異常の候補を見つける」という、
+> 基本的なセキュリティ監視プログラムが完成します。** Level 2・Level 3 は、それをより速く・より賢くする課題です。
+
+他のチームの章も自由に読んでかまいません。Notebook を開き直したときは、第1章と 3.7 の共通関数のセルを実行してから、担当章に戻ってください。
 
 ## 0.6 セルの種類
 
@@ -157,9 +184,21 @@ md("""
 | **【ヒント】** | 考え方のヒントです。3 段階あるので、順番に開いてください。 |
 | **【考察課題】** | 結果について考え、文章で答えます。 |
 
+**あなたが編集するのは【学生実装課題】のセルだけです。** それ以外のセルは、上から順に実行するだけで大丈夫です。
+
 学生実装課題の関数は、最初は `raise NotImplementedError("学生実装課題")` と書かれています。
 このまま実行すると、動作確認のセルに **「[未実装]」** と表示されます。これはエラーではありません。
 `raise NotImplementedError(...)` の行を消して、自分のコードを書いてください。
+
+1 つの課題は、次の順に並んでいます。**課題に必要な説明は、すべてこのまとまりの中にあります。**
+
+1. 課題の説明（何を作るか、入力と期待する出力の例）
+2. 【学生実装課題】のセル（ここを編集する）
+3. 【ヒント】（必要なときだけ開く）
+4. 【動作確認】のセル（実行して [OK] になるか確かめる）
+
+**ヒントの表示について：** ヒントは「▶ ヒント1：考え方」のような折りたたみ表示になっています。クリックすると開きます。
+環境によって折りたたみが使えない場合は、ヒントがそのまま表示されます。その場合は、自分で考えてから順番に読んでください。
 
 ## 0.7 チーム開発の進め方
 
@@ -289,13 +328,21 @@ md("""
 | --- | --- | --- | --- | --- |
 | **Mini Dataset** | 5〜10 件 | Notebook の中 | 人工データ | 手で数えて確認しながら、最初の関数を作る |
 | **Tiny Dataset** | 20〜50 件 | `data/c1x/*_tiny.csv` | 人工データ | 正常・異常・境界の例でテストする |
-| **Small Dataset** | 500〜5,000 件 | `data/c1x/*_small.csv` | 公開データを教員が加工 | 実際のデータに使ってみる（Phase 2 で準備予定） |
+| **Small Dataset** | 数百〜数千件 | `data/c1x/*_small.csv` など | 公開データを教員が加工（C-1C は人工データ） | Level 3 で実際のデータに使ってみる |
 | **Benchmark Dataset** | 1,000〜100,000 件 | 必要なときに生成 | 人工データ | 実行時間と計算量の比較 |
 
 使う順番：**Mini → Tiny → Small → Benchmark**
 
 - 基本課題（Level 1）は、**Mini と Tiny だけで完了できます**。
 - Small Dataset がまだない場合でも、演習は進められます。
+
+| テーマ | Level 3 で使うデータ | 状態 |
+| --- | --- | --- |
+| C-1A | CIC-IDS2017（研究用の公開データ） | 準備中（なければ Tiny Dataset を使う） |
+| C-1B | Loghub OpenSSH（実サーバーの公開ログ） | 用意済み |
+| C-1C | 旧教材の人工アクセスログ | 用意済み |
+| C-1D | Loghub Linux（実サーバーの公開ログ） | 用意済み |
+| C-1E | CIC-IDS2017（C-1A と共用） | 準備中（なければ Tiny Dataset を使う） |
 
 ## 2.2 人工データと公開データの違い
 
@@ -512,6 +559,13 @@ def theme_chapter(t):
     # 第{n}章　{t['code']} {t['title']}
 
     > この章は、第0章〜第3章を実行した後なら、**他のテーマの章を実行しなくても**使えます。
+
+    | この章の進め方 | 節 | 内容 |
+    | --- | --- | --- |
+    | まず読む | {n}.1〜{n}.4 | 問題・背景・課題の一覧・データ。{n}.2 は、最初は表だけ読めば十分です |
+    | **Level 1（必須）** | {n}.5〜{n}.7 | データを見る → 課題1〜4 を実装する → Tiny Dataset に適用する |
+    | Level 2（推奨） | {n}.8 | 辞書・集合などで改良する |
+    | Level 3（選択） | {n}.9〜{n}.10 | 公開データ・発展課題・考察 |
     """)
     md(f"## {n}.1 このテーマで何を解決するのか\n\n" + textwrap.dedent(t["problem"]).strip())
     md(f"## {n}.2 社会的背景と必要な技術知識\n\n" + textwrap.dedent(t["background"]).strip())
@@ -548,7 +602,7 @@ def theme_chapter(t):
     **対応レベル：Level 1（基本課題）**　／　**学習目標：** STEP 2 の関数を組み合わせ、閾値で異常の候補を取り出せる。
 
     > **注意：** ここで見つかるのは「調べる必要がある**候補**」です。攻撃だと確定したわけではありません。
-    """)
+    """ + ("\n" + textwrap.indent(textwrap.dedent(t["step3_note"]).strip(), "    ") if "step3_note" in t else ""))
     for task in t["step3"]:
         emit_task(task, LEVEL1)
     md("### Tiny Dataset に適用する\n\n課題をすべて実装したら、Tiny Dataset でも試してみましょう。\n\n" + TEACHER)
@@ -570,6 +624,9 @@ def theme_chapter(t):
        + textwrap.dedent(t["step5"]).strip())
     md(TEACHER)
     code(t["small_code"])
+    for extra_md, extra_code in t.get("step5_extra", []):
+        md(extra_md)
+        code(extra_code)
     md(f"{LEVEL3}\n\n" + textwrap.dedent(t["step5_tasks"]).strip())
 
     md(f"## {n}.10 結果の考察とチーム独自の発展課題\n\n" + textwrap.dedent(t["discussion"]).strip())
@@ -584,18 +641,19 @@ def emit_task(task, level_label):
     code(task["check"])
 
 
-def small_loader(var, rel_path, int_columns, note):
+def small_loader(var, rel_path, int_columns, note, title="Small Dataset（公開データを加工した CSV）",
+                 path_var="SMALL_PATH"):
     return f'''
-    # 【教員提供コード】Small Dataset（公開データを加工した CSV）を読み込む
-    SMALL_PATH = DATA_DIR / "{rel_path}"
-    if SMALL_PATH.exists():
-        {var} = load_csv(SMALL_PATH, int_columns={int_columns!r})
-        print("Small Dataset:", len({var}), "件")
+    # 【教員提供コード】{title}を読み込む
+    {path_var} = DATA_DIR / "{rel_path}"
+    if {path_var}.exists():
+        {var} = load_csv({path_var}, int_columns={int_columns!r})
+        print("{rel_path}:", len({var}), "件")
         show_records({var}, limit=5)
     else:
         {var} = []
-        print("Small Dataset はまだ用意されていません（{note}）。")
-        print("Mini Dataset と Tiny Dataset で演習を続けてください。")
+        print("このデータはまだ用意されていません（{note}）。")
+        print("Mini Dataset と Tiny Dataset（人工データ）で演習を続けてください。")
     '''
 
 
@@ -613,6 +671,8 @@ C1A = {
     2. **どのコンピュータが、多数の異なる宛先ポートに通信しているか？**
 
     1 つ目は「回数を数える」問題、2 つ目は「種類を数える」問題です。
+
+    > C-1E（第8章）も通信のデータを使いますが、C-1E は送ったデータの「**量**」を見ます。C-1A は「**回数**」と「**種類**」を見ます。
     """,
     "background": """
     ### なぜ必要か
@@ -655,7 +715,7 @@ C1A = {
     "data": """\
     | Mini Dataset | Notebook の中（`network_records`） | 9 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1a/network_flows_tiny.csv` | 42 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1a/network_flows_small.csv` | 500〜5,000（予定） | CIC-IDS2017 を加工（予定） | Phase 2 で準備 |
+    | Small Dataset | `data/c1a/network_flows_small.csv` | 500〜5,000（予定） | CIC-IDS2017 を加工（予定） | 公開データの取得待ち（Phase 2B） |
     | Benchmark Dataset | 必要なときに生成 | 1,000〜100,000 | 人工データ | Phase 4 で準備 |
 
     Mini Dataset の `PC-A` や `Server-1` は教材用の名前で、実際の IP アドレスではありません。
@@ -1013,12 +1073,13 @@ C1A = {
     "step5": """
     **学習目標：** 公開データに適用し、時間の情報を使った検出や、検出性能の評価を行う。
 
-    Small Dataset は、研究用の公開データ **CIC-IDS2017**（カナダ・ニューブランズウィック大学）から、教員が必要な列だけを取り出して作る予定です（Phase 2）。
+    Small Dataset は、研究用の公開データ **CIC-IDS2017**（カナダ・ニューブランズウィック大学）から、教員が必要な列だけを取り出して作る予定です（Phase 2B。公開データの取得と利用条件の確認が終わってから）。
+    **まだ用意されていない場合は、Tiny Dataset（人工データ）を使って発展課題に取り組んでください。** 下のセルは、ファイルがなくてもエラーになりません。
     研究用の実験環境で集めたデータなので、実際の会社のネットワークとは違うことに注意してください。
     """,
     "small_code": small_loader("network_small", "c1a/network_flows_small.csv",
                                ["record_id", "src_port", "dst_port", "packet_count", "byte_count"],
-                               "Phase 2 で教員が CIC-IDS2017 から作成予定"),
+                               "公開データ CIC-IDS2017 の取得待ち"),
     "step5_tasks": """
     次の中から選んで取り組みます。
 
@@ -1089,10 +1150,12 @@ C1B = {
     "data": """\
     | Mini Dataset | Notebook の中（`auth_records`） | 8 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1b/authentication_tiny.csv` | 32 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1b/authentication_small.csv` | 約 600（予定） | Loghub OpenSSH を加工（予定） | Phase 2 で準備 |
+    | Small Dataset | `data/c1b/authentication_small.csv` | 525 | 公開ログ（Loghub OpenSSH）を加工 | 用意済み |
+    | （参考）全イベント | `data/c1b/ssh_events_small.csv` | 2,000 | 公開ログ（Loghub OpenSSH）を加工 | 用意済み |
     | Benchmark Dataset | 必要なときに生成 | 1,000〜100,000 | 人工データ | Phase 4 で準備 |
 
-    Small Dataset の元になる **Loghub OpenSSH** は、実際に動いていたサーバーのログです。**正解ラベルはありません**。
+    **基本課題（Level 1・2）は Mini と Tiny（人工データ）で行います。** 公開ログは Level 3 で使います。
+    公開ログは実際に動いていたサーバーの記録で、**正解ラベル（攻撃かどうか）はありません**（5.9 で説明します）。
     """,
     "mini_code": '''
     # 【教員提供コード】C-1B の Mini Dataset（人工データ 8 件）
@@ -1206,6 +1269,10 @@ C1B = {
             ''',
         },
     ],
+    "step3_note": """
+    > **認証の失敗 ≠ 不正認証。** 失敗が多いユーザーは「調べる必要がある候補」です。入力ミスかもしれません。
+    > 反対に、盗まれたパスワードによる不正なログインは「成功」として記録されるため、失敗回数だけでは見つかりません。
+    """,
     "step3": [
         {
             "title": "課題3：全ユーザーの認証失敗回数を集計する（基本版）",
@@ -1397,19 +1464,64 @@ C1B = {
     "step5": """
     **学習目標：** 実際のサーバーのログに適用し、正解ラベルがないデータの扱い方を学ぶ。
 
-    Small Dataset は、公開ログ集 **Loghub** の **OpenSSH** ログ（2,000 行）から、
-    認証に関係する行を取り出して作る予定です（Phase 2）。
-    実際のサーバーのログですが、**正解ラベルはありません**。
-    また、このログには成功したログインがほとんど含まれていません（Phase 1 の調査で確認済み）。
+    ### 公開ログ：Loghub OpenSSH
+
+    | 項目 | 内容 |
+    | --- | --- |
+    | 出典 | **Loghub**（LogPAI）の OpenSSH ログ。研究室の SSH サーバーで約 4 時間に記録された 2,000 行 |
+    | データの種類 | **実際に動いていたサーバーのログ**（人工データではない） |
+    | ファイル | `authentication_small.csv`：認証の試行の行だけ（525 行）／`ssh_events_small.csv`：全 2,000 行 |
+    | 正解ラベル | **なし**（`label` 列はすべて `unknown`）。「攻撃かどうか」の答えはありません |
+    | 人工データとの違い | 成功は 1 行、失敗は 524 行で、**ほとんどが失敗**です（インターネット上の自動ログイン試行が多いため）。比率は調整していません |
+
+    **列の意味（Tiny Dataset と同じ列名は、同じ意味です）**
+
+    | 列 | 意味 |
+    | --- | --- |
+    | `log_date`、`log_time` | 日付（月-日）と時刻。**原データに年がないため、年はありません** |
+    | `user_id` | ログインに使われたユーザー名。`root` や `admin` など、攻撃でよく試される名前が多い |
+    | `src_host` | 接続元。実在の IP アドレスを `ip-001` のような匿名 ID に置き換えています |
+    | `result` | `success` / `failure`。**認証の結果であって、攻撃かどうかの答えではありません** |
+    | `invalid_user` | `yes` = サーバーに存在しないユーザー名での試行 |
+    | `repeat_count` | 通常は 1。「message repeated 5 times」の行は 5（同じ失敗が 5 回あったことを 1 行にまとめた記録） |
+    | `event_type`、`message` | 記録の種類と、元のメッセージ（IP アドレスは匿名化済み） |
+
+    **注意：** 1 回のログイン失敗は、ログの中では複数の行（`Failed password` の行と `pam_unix` の行など）に記録されます。
+    `authentication_small.csv` は二重に数えないよう、試行 1 回につき 1 行になるように選んであります。
+    `ssh_events_small.csv` は全部の行で、`event_type` は「どんな種類の記録か」の分類です（成功・失敗の分類とは別です）。
+
+    出典：Loghub（https://github.com/logpai/loghub）。ライセンス文は `data/c1b/LICENSE_LOGHUB.txt` にあります。
     """,
-    "small_code": small_loader("auth_small", "c1b/authentication_small.csv", ["record_id"],
-                               "Phase 2 で教員が Loghub OpenSSH から作成予定"),
+    "small_code": small_loader("auth_small", "c1b/authentication_small.csv",
+                               ["record_id", "source_line", "repeat_count"],
+                               "教員が scripts/preprocess_c1b.py で作成する",
+                               title="公開ログ（Loghub OpenSSH）の認証の試行"),
+    "step5_extra": [
+        ("### Level 1 の関数を公開ログに使ってみる\n\n"
+         "STEP 2・3 で作った関数は、列名が同じなので公開ログにもそのまま使えます。\n\n" + TEACHER,
+         '''
+         # 【教員提供コード】自分で作った関数を公開ログに適用する（課題3・4 を実装した後に実行）
+         if auth_small:
+             try:
+                 small_summary_c1b = summarize_failures_baseline(auth_small)
+                 print("ユーザーの種類:", len(small_summary_c1b))
+                 print("失敗が 20 回以上のユーザー（調べる必要がある候補）:",
+                       detect_suspicious_users(small_summary_c1b, 20))
+             except NotImplementedError:
+                 print("[未実装] 課題3・4 を実装した後に、もう一度実行してください。")
+         else:
+             print("公開ログがないため、このセルは何もしません。")
+         '''),
+    ],
     "step5_tasks": """
     - **時間内の失敗集中**：「5 分間に 5 回以上失敗」のように、時間の条件を加える。
     - **複数アカウントへの試行**：1 つの接続元が試したユーザーの種類数を調べる（パスワードスプレー）。
     - **失敗の後の成功**：何度も失敗した直後に成功したログインを探す。
     - **異常度（スコア）**：失敗回数・ユーザーの種類数・時間の集中などを点数にして合計する。
+    - **接続元別の集計**：改良課題B の `summarize_failures_by_source()` を公開ログに使い、どの接続元が多くのユーザー名を試したかを調べる。
+    - **イベントの種類の集計**：`ssh_events_small.csv` の `event_type` ごとに件数を数える。
     - **正解ラベルがないデータ**：Precision などは計算できません。候補の件数や、閾値による変化を調べます。
+    - 「失敗の後の成功」は、公開ログには成功が 1 回しかないため、Tiny Dataset（`user04`）で調べます。
     """,
     "discussion": f"""
     {THINK}
@@ -1465,7 +1577,7 @@ C1C = {
     | --- | --- | --- | --- |
     | Level 1 | STEP 2 | 課題1：URL の文字数を求める | `get_url_length()` |
     | Level 1 | STEP 2 | 課題2：指定した長さを超える URL を取り出す | `detect_long_urls()` |
-    | Level 1 | STEP 3 | 課題3：URL が指定した文字列を含むか調べる | `contains_pattern()` |
+    | Level 1 | STEP 3 | 課題3：URL が注意する文字列のどれかを含むか調べる | `contains_any_pattern()` |
     | Level 1 | STEP 3 | 課題4：条件に合う不審なリクエストの候補を取り出す | `detect_suspicious_requests()` |
     | Level 2 | STEP 4 | 判定ルールをリストで管理し、異常度（スコア）を計算する | `calculate_risk_score()`、`detect_by_score()` |
     | Level 3 | STEP 5 | 誤検出と検出漏れの分析、ルールの比較、検出性能の評価 | チームで設計 |
@@ -1475,8 +1587,10 @@ C1C = {
     "data": """\
     | Mini Dataset | Notebook の中（`http_records`） | 8 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1c/http_requests_tiny.csv` | 32 | 人工データ | 用意済み |
-    | 旧教材のログ | `data/sample_access.log` | 47 | 人工データ（旧 C1 教材） | 用意済み（Phase 2 で CSV 化を検討） |
-    | Small Dataset | `data/c1c/http_requests_small.csv` | 1,000〜5,000（予定） | CSIC HTTP 2010 など（予定） | Phase 2 で準備（入手方法を確認中） |
+    | アクセスログ（CSV） | `data/c1c/web_access_log_synthetic.csv` | 47 | **人工データ**（旧 C1 教材の `sample_access.log` を CSV にしたもの） | 用意済み |
+    | Small Dataset（公開データ） | `data/c1c/http_requests_small.csv` | - | CSIC HTTP 2010 など | **保留**（入手方法と利用条件を確認中） |
+
+    C-1C では、公開データの代わりに**人工データ**を使って発展課題まで進められるようにしています。
     """,
     "mini_code": '''
     # 【教員提供コード】C-1C の Mini Dataset（人工データ 8 件）
@@ -1587,40 +1701,53 @@ C1C = {
     ],
     "step3": [
         {
-            "title": "課題3：URL が指定した文字列を含むか調べる",
+            "title": "課題3：URL が注意する文字列のどれかを含むか調べる",
             "explain": """
-            **何を作るか：** `url` の中に `pattern` が含まれていれば `True`、なければ `False` を返します。
+            **何を作るか：** `patterns`（文字列のリスト）のうち、**どれか 1 つでも** `url` に含まれていれば `True`、
+            1 つも含まれていなければ `False` を返します。
+
+            **なぜ必要か：** 攻撃に使われやすい文字（例：`'` や `<script`）は何種類もあります。リストにまとめて一度に調べます。
+
+            「文字列 A が文字列 B の中にあるか」は、`A in B` で調べられます。例：`"ab" in "cabd"` → `True`
 
             | 入力 | 期待する出力 |
             | --- | --- |
-            | `contains_pattern("/search?q=<script>", "<script")` | `True` |
-            | `contains_pattern("/home", "<script")` | `False` |
+            | `contains_any_pattern("/search?q=<script>", ["'", "<script"])` | `True` |
+            | `contains_any_pattern("/home", ["'", "<script"])` | `False` |
+            | `contains_any_pattern("/home", [])` | `False`（調べる文字列がない） |
             """,
             "stub": '''
             # 【学生実装課題：Level 1】課題3
-            def contains_pattern(url, pattern):
+            def contains_any_pattern(url, patterns):
                 """
-                url に pattern が含まれているかを調べる。
+                patterns のうち、どれか 1 つでも url に含まれているかを調べる。
 
+                引数:
+                    url: URL の文字列
+                    patterns: 注意する文字列のリスト（例: ["'", "<script"]）
                 戻り値:
-                    含まれていれば True、なければ False
+                    1 つでも含まれていれば True、1 つも含まれていなければ False
                 """
-                # TODO
+                # TODO: patterns を for 文で 1 つずつ調べる。含まれていたら、その時点で True を返す。
 
                 raise NotImplementedError("学生実装課題")
             ''',
             "hints": (
-                "文字列の中に、別の文字列が入っているかを調べます。",
-                "`部分 in 全体` は、含まれていれば True になります。例：`\"ab\" in \"cabd\"` → True",
+                "パターンを 1 つずつ調べ、見つかった時点で「含む」と答えます。最後まで見つからなければ「含まない」です。",
+                "`if pattern in url:` で調べます。関数の途中でも `return True` と書くと、そこで関数が終わります。`return False` は for 文の**外**に書きます。",
                 """
-                pattern が url に含まれているかどうか（True / False）を返す
+                patterns の各 pattern について:
+                    もし pattern が url に含まれるなら: True を返す
+                False を返す
                 """,
             ),
             "check": '''
             # 【動作確認】課題3
-            check("<script を含む", contains_pattern, ("/search?q=<script>", "<script"), True)
-            check("含まない", contains_pattern, ("/home", "<script"), False)
-            check("シングルクォートを含む", contains_pattern, (http_records[5]["url"], "'"), True)
+            check("<script を含む", contains_any_pattern, ("/search?q=<script>", ["'", "<script"]), True)
+            check("シングルクォートを含む", contains_any_pattern, (http_records[5]["url"], ["'", "<script"]), True)
+            check("どれも含まない", contains_any_pattern, ("/home", ["'", "<script"]), False)
+            check("2 つ目のパターンだけ含む", contains_any_pattern, ("/a<script", ["'", "<script"]), True)
+            check("パターンが空", contains_any_pattern, ("/home", []), False)
             ''',
         },
         {
@@ -1628,8 +1755,8 @@ C1C = {
             "explain": """
             **何を作るか：** 次の**どちらか**に当てはまるリクエストの URL を取り出します。
 
-            - URL が `max_length` より長い
-            - URL が `patterns`（文字列のリスト）の**どれか 1 つでも**含む
+            - URL が `max_length` より長い（課題1 の `get_url_length()` を使う）
+            - URL が `patterns` のどれかを含む（課題3 の `contains_any_pattern()` を使う）
 
             | 入力 | 期待する出力 |
             | --- | --- |
@@ -1648,21 +1775,19 @@ C1C = {
                 戻り値:
                     URL のリスト（元の順序のまま。同じリクエストを 2 回入れない）
                 """
-                # TODO: get_url_length() と contains_pattern() を組み合わせる。
+                # TODO: get_url_length() と contains_any_pattern() を、or でつないで判定する。
 
                 raise NotImplementedError("学生実装課題")
             ''',
             "hints": (
-                "リクエストごとに「怪しいかどうか」を表す変数を False で始め、条件に当てはまったら True にします。",
-                "「どちらか」は `or` です。パターンのリストは `for pattern in patterns:` で 1 つずつ調べます。",
+                "課題1 と課題3 の関数がすでにあるので、2 つの条件を「または」でつなぐだけです。",
+                "「どちらか」は `or` です：`if 条件A or 条件B:`",
                 """
                 結果 ← 空のリスト
                 records の各 record について:
                     url ← record の "url"
-                    怪しい ← (url の長さ > max_length)
-                    patterns の各 pattern について:
-                        もし url が pattern を含むなら: 怪しい ← True
-                    もし 怪しい なら: 結果に url を追加
+                    もし (url の長さ > max_length) または (url が patterns のどれかを含む) なら:
+                        結果に url を追加
                 結果を返す
                 """,
             ),
@@ -1670,6 +1795,8 @@ C1C = {
             # 【動作確認】課題4
             check("長さと文字列の条件", detect_suspicious_requests, (http_records, 100, ["'", "<script"]),
                   [http_records[4]["url"], http_records[5]["url"], http_records[6]["url"]])
+            check("長さの条件だけ（パターンが空）", detect_suspicious_requests,
+                  (http_records, 100, []), [http_records[4]["url"]])
             check("条件なし（長さの上限が大きく、パターンも空）", detect_suspicious_requests,
                   (http_records, 1000, []), [])
             ''',
@@ -1750,21 +1877,52 @@ C1C = {
     "step5": """
     **学習目標：** 正解ラベル付きのデータで、判定ルールの良し悪しを数値で比べる。
 
-    Small Dataset には、研究用の公開データ **CSIC HTTP 2010**（スペイン国立研究協議会）を使う予定です。
-    正常なリクエストと異常なリクエストのラベルが付いています。
-    入手方法と再配布の条件を確認中のため、準備できるまでは Tiny Dataset（`label` 列付き）で評価を練習します。
+    ### アクセスログ：`web_access_log_synthetic.csv`（人工データ）
 
-    旧教材の `data/sample_access.log`（Web サーバーのアクセスログ、人工データ 47 件）も、
-    「404 エラーの集中」や「アクセス集中」を調べる発展課題に使えます。
+    | 項目 | 内容 |
+    | --- | --- |
+    | 出典 | 旧 C1 教材のために作成した人工のアクセスログ `data/sample_access.log`（48 行）を CSV にしたもの |
+    | データの種類 | **人工データ**（実在の Web サイトの記録ではない）。IP アドレスは説明用のアドレス |
+    | 件数 | 47 件（形式が正しくない 1 行は除外） |
+    | 正解ラベル | なし。代わりに `scenario` 列があります（作成者が意図したパターン。攻撃の答えではありません） |
+
+    | 列 | 意味 |
+    | --- | --- |
+    | `timestamp` | 日時（日本時間 +09:00） |
+    | `src_ip`、`method`、`url` | 接続元、HTTP メソッド、URL（Tiny Dataset と同じ意味） |
+    | `status` | HTTP ステータスコード（200 = 成功、404 = ページが見つからない） |
+    | `response_bytes` | サーバーが返したデータの大きさ（バイト）。空欄はデータなし |
+    | `scenario` | `normal`（通常）／`access_concentration`（アクセス集中）／`error_404_concentration`（404 エラー集中） |
+
+    Tiny Dataset が「1 件ずつの URL の特徴」を見るデータなのに対し、このログは「**同じ接続元からのアクセスの集まり**」を見るのに向いています。
+
+    > 研究用の公開データ **CSIC HTTP 2010**（正常・異常のラベル付き HTTP リクエスト）は、入手方法と利用条件を確認中のため、現在は使いません。
     """,
-    "small_code": small_loader("http_small", "c1c/http_requests_small.csv", ["request_id"],
-                               "Phase 2 で教員が準備予定。公開データの入手方法と再配布条件を確認中"),
+    "small_code": small_loader("web_log", "c1c/web_access_log_synthetic.csv",
+                               ["request_id", "source_line", "status"],
+                               "教員が scripts/preprocess_c1c.py で作成する",
+                               title="人工のアクセスログ（CSV）", path_var="WEB_LOG_PATH"),
+    "step5_extra": [
+        ("### Level 1 の関数をアクセスログに使ってみる\n\n" + TEACHER,
+         '''
+         # 【教員提供コード】自分で作った関数をアクセスログに適用する（課題1〜4 を実装した後に実行）
+         if web_log:
+             try:
+                 found = detect_suspicious_requests(web_log, 100, ["'", "<script", "../"])
+                 print("URL の特徴による候補:", len(found), "件")
+                 print("→ このログの異常は URL の文字列ではなく、アクセスの「回数」や「404 の多さ」に現れます。")
+             except NotImplementedError:
+                 print("[未実装] 課題1〜4 を実装した後に、もう一度実行してください。")
+         else:
+             print("アクセスログがないため、このセルは何もしません。")
+         '''),
+    ],
     "step5_tasks": """
     - **誤検出と検出漏れの分析**：Tiny Dataset の `label` と比べ、どのリクエストを間違えたかを調べる。
     - **ルールの比較**：ルールを増やす・減らす・点数を変えると、結果がどう変わるかを比べる。
     - **閾値の調整**：`max_length` や `min_score` を変えたときの、検出件数の変化をグラフにする。
     - **検出性能の評価**：第9章の `evaluate_detection` で、Precision・Recall を計算する。
-    - **アクセスログの分析**：`data/sample_access.log` から、404 エラーが多い接続元を探す。
+    - **アクセスログの分析**：`web_access_log_synthetic.csv` で、接続元ごとのアクセス回数と 404 エラーの回数を数え、`scenario` 列と比べる。
 
     > すべて保存済みデータの分析に限ります。実際の Web サイトや API にリクエストを送ってはいけません。
     """,
@@ -1832,10 +1990,11 @@ C1D = {
     "data": """\
     | Mini Dataset | Notebook の中（`files_before` など） | 3 + 3 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1d/file_states_before_tiny.csv`、`file_states_after_tiny.csv` | 12 + 13 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1d/system_events_small.csv` | 約 2,000（予定） | Loghub Linux を加工（予定） | Phase 2 で準備 |
+    | Small Dataset | `data/c1d/system_events_small.csv` | 2,000 | 公開ログ（Loghub Linux）を加工 | 用意済み |
 
-    **注意：** 公開されている Linux のシステムログ（Small Dataset）と、人工のファイル状態データ（Mini・Tiny）は、**別のデータ**です。
-    公開ログには、ファイルの変更やランサムウェアの正解ラベルはありません。
+    **基本課題（Level 1・2）は、人工のファイル状態データ（Mini・Tiny）で行います。**
+    公開されている Linux のシステムログ（Small Dataset）は**別のデータ**で、Level 3 だけで使います。
+    公開ログには、ファイルの変更やランサムウェアの記録・正解ラベルはありません。
     """,
     "mini_code": '''
     # 【教員提供コード】C-1D の Mini Dataset（人工データ）
@@ -2002,11 +2161,18 @@ C1D = {
         {
             "title": "課題4：変更前後の差分をまとめる",
             "explain": """
-            **何を作るか：** 追加と削除の結果を、1 つの辞書にまとめて返します。
+            **何を作るか：** 次の 3 つを、1 つの辞書にまとめて返します。
+
+            - `"added"`：追加されたファイル（課題2 の関数を使う）
+            - `"deleted"`：削除されたファイル（課題3 の関数を使う）
+            - `"kept"`：変更前にも変更後にもあるファイル（**ここは新しく for 文で書く**。before の順序）
+
+            **なぜ `kept` が必要か：** 名前が残っていても、中身が書き換えられているかもしれません。
+            `kept` のファイルが、Level 2 で中身（ハッシュ値）を比べる対象になります。
 
             | 入力 | 期待する出力 |
             | --- | --- |
-            | `compare_file_lists_baseline(files_before, files_after)` | `{"added": ["unknown.txt"], "deleted": ["users.txt"]}` |
+            | `compare_file_lists_baseline(files_before, files_after)` | `{"added": ["unknown.txt"], "deleted": ["users.txt"], "kept": ["config.txt", "report.txt"]}` |
             """,
             "stub": '''
             # 【学生実装課題：Level 1】課題4
@@ -2015,24 +2181,34 @@ C1D = {
                 変更前後のファイル一覧の差分をまとめる（基本版）。
 
                 戻り値:
-                    {"added": 追加されたファイルのリスト, "deleted": 削除されたファイルのリスト}
+                    {"added": 追加されたファイルのリスト,
+                     "deleted": 削除されたファイルのリスト,
+                     "kept": 変更前後の両方にあるファイルのリスト（before の順序）}
                 """
-                # TODO: 課題2と課題3の関数を使う。
+                # TODO:
+                # "added" と "deleted" は、課題2と課題3の関数を使う。
+                # "kept" は、before の各ファイルについて、after にもあるものを集める。
 
                 raise NotImplementedError("学生実装課題")
             ''',
             "hints": (
-                "すでに作った 2 つの関数を呼び出し、結果を辞書に入れるだけです。",
-                "辞書は `{\"added\": ..., \"deleted\": ...}` の形で作れます。",
+                "added と deleted は、作った関数を呼ぶだけです。kept は課題3 と反対で、after に「ある」ものを集めます。",
+                "辞書は `{\"added\": ..., \"deleted\": ..., \"kept\": ...}` の形で作れます。kept には `file_exists(after, name)` が使えます。",
                 """
+                kept ← 空のリスト
+                before の各 name について:
+                    もし after に name があるなら: kept に name を追加
                 {"added": find_added_files(before, after),
-                 "deleted": find_deleted_files(before, after)} を返す
+                 "deleted": find_deleted_files(before, after),
+                 "kept": kept} を返す
                 """,
             ),
             "check": '''
             # 【動作確認】課題4
             check("差分のまとめ", compare_file_lists_baseline, (files_before, files_after),
-                  {"added": ["unknown.txt"], "deleted": ["users.txt"]})
+                  {"added": ["unknown.txt"], "deleted": ["users.txt"], "kept": ["config.txt", "report.txt"]})
+            check("変化なし", compare_file_lists_baseline, (files_before, files_before),
+                  {"added": [], "deleted": [], "kept": files_before})
             ''',
         },
     ],
@@ -2042,6 +2218,7 @@ C1D = {
         diff = compare_file_lists_baseline(files_before_tiny, files_after_tiny)
         print("追加されたファイル:", diff["added"])
         print("削除されたファイル:", diff["deleted"])
+        print("両方にあるファイル:", len(diff["kept"]), "個（中身が変わったかは Level 2 で調べる）")
     except NotImplementedError:
         print("[未実装] 課題1〜4 を実装した後に、もう一度実行してください。")
     ''',
@@ -2125,15 +2302,34 @@ C1D = {
     "step5": """
     **学習目標：** 実際の Linux のシステムログを読み、通常と違うイベントを探す。
 
-    Small Dataset は、公開ログ集 **Loghub** の **Linux** ログ（2,000 行）から作る予定です（Phase 2）。
-    実際に動いていたサーバーのログで、`su`（管理者への切り替え）、`sshd`（リモートログイン）、`ftpd` などの記録が含まれます。
-    **正解ラベルはありません**。また、ファイル変更の記録は含まれていません。
+    ### 公開ログ：Loghub Linux
+
+    | 項目 | 内容 |
+    | --- | --- |
+    | 出典 | Public Security Log Sharing Site（Anton Chuvakin 氏）で公開された Linux サーバーのログを、**Loghub** が再配布したもの |
+    | データの種類 | **実際に動いていたサーバーのログ**（`/var/log/messages`）。2,000 行、6 月 14 日〜7 月 27 日 |
+    | 正解ラベル | **なし**（`label` 列はすべて `unknown`）。**ファイル変更やランサムウェアの記録もありません** |
+    | 主な記録 | FTP の接続（909 行）、認証の失敗（537 行）、セッションの開始・終了（各 123 行）など |
+
+    | 列 | 意味 |
+    | --- | --- |
+    | `log_date`、`log_time` | 日付（月-日）と時刻。**原データに年がないため、年はありません** |
+    | `host_id` | 記録したサーバーの名前（`combo`） |
+    | `process_name` | 記録を書いたプログラム。例：`sshd(pam_unix)`（リモートログイン）、`su(pam_unix)`（ユーザーの切り替え）、`ftpd`（ファイル転送） |
+    | `event_id` | Loghub がメッセージの形で分類した番号 |
+    | `event_type` | 教員がメッセージの文言で付けた大まかな種類（例：`auth_failure`、`session_opened`）。**攻撃かどうかの判定ではありません** |
+    | `message` | 元のメッセージ（IP アドレスとホスト名は匿名化済み） |
+
+    出典：Loghub（https://github.com/logpai/loghub）。ライセンス文は `data/c1d/LICENSE_LOGHUB.txt` にあります。
     """,
-    "small_code": small_loader("system_events_small", "c1d/system_events_small.csv", ["record_id"],
-                               "Phase 2 で教員が Loghub Linux から作成予定"),
+    "small_code": small_loader("system_events_small", "c1d/system_events_small.csv", ["record_id", "source_line"],
+                               "教員が scripts/preprocess_c1d.py で作成する",
+                               title="公開ログ（Loghub Linux）のシステムイベント"),
     "step5_tasks": """
     - **プロセス別のイベント数**：`process_name` ごとにイベントを数え、普段と違うものを探す。
-    - **短時間に集中する変更**：人工のファイル変更イベントを使い、1 分間に何個のファイルが変わったかを数える（ランサムウェアの兆候）。
+    - **イベントの種類別の集計**：`event_type` ごとに件数を数える。
+    - **不審なイベントの候補**：`root_login`、`auth_failure` が続く時間帯などを探す。
+    - **短時間のイベント集中**：1 分ごとに区切って件数を数え、急に増えた時間帯を探す（`log_date` と `log_time` を使う）。
     - **複数の手がかりの組み合わせ**：「拡張子の変化」「要求文らしいファイルの追加」「大量の変更」を組み合わせる。
     - **本物のハッシュ値**：教材用に作った安全なファイルだけを対象に、`hashlib` でハッシュ値を計算してみる。
 
@@ -2204,7 +2400,7 @@ C1E = {
     "data": """\
     | Mini Dataset | Notebook の中（`transfer_records`） | 6 | 人工データ | 用意済み |
     | Tiny Dataset | `data/c1e/data_transfer_tiny.csv` | 36 | 人工データ | 用意済み |
-    | Small Dataset | `data/c1e/data_transfer_small.csv` | 500〜5,000（予定） | CIC-IDS2017 を加工（予定。C-1A と同じ元データ） | Phase 2 で準備 |
+    | Small Dataset | `data/c1e/data_transfer_small.csv` | 500〜5,000（予定） | CIC-IDS2017 を加工（予定。C-1A と同じ元データ） | 公開データの取得待ち（Phase 2B） |
 
     **注意：** CIC-IDS2017 のラベルは「一般的な攻撃」のラベルで、**情報流出のラベルではありません**。
     情報流出の評価には、Tiny Dataset（人工データ）や、DNS を使った持ち出しの研究用データ（発展課題）を使います。
@@ -2466,11 +2662,12 @@ C1E = {
     "step5": """
     **学習目標：** 通常時との比較や時間の情報を使い、より適切な判定ルールを考える。
 
-    Small Dataset は、C-1A と同じ公開データ **CIC-IDS2017** から、通信量の列を中心に取り出して作る予定です（Phase 2）。
+    Small Dataset は、C-1A と同じ公開データ **CIC-IDS2017** から、通信量の列を中心に取り出して作る予定です（Phase 2B）。
+    **まだ用意されていない場合は、Tiny Dataset（人工データ）を使って発展課題に取り組んでください。**
     DNS を使った情報流出の研究用データ（**CIC-Bell-DNS-EXF-2021**）は、発展課題の候補です。
     """,
     "small_code": small_loader("transfer_small", "c1e/data_transfer_small.csv", ["record_id", "byte_count"],
-                               "Phase 2 で教員が CIC-IDS2017 から作成予定"),
+                               "公開データ CIC-IDS2017 の取得待ち"),
     "step5_tasks": """
     - **通常時との比較**：各通信元の「いつもの送信量」（平均や中央値）を求め、それより大きく増えたものを探す。
     - **固定時間窓**：10 分ごとの送信量を集計し、急に増えた時間帯を探す。
@@ -2704,15 +2901,32 @@ Notebook は複数人で同時に編集すると、変更をまとめる（マ�
 """)
 
 
+def has_outputs(path):
+    """Notebook に実行結果が残っているか（＝学生や教員が実行・編集した Notebook か）を調べる"""
+    existing = nbformat.read(path, as_version=4)
+    return any(c.get("outputs") or c.get("execution_count") for c in existing.cells if c.cell_type == "code")
+
+
 def main():
+    parser = argparse.ArgumentParser(description="統合 Notebook の生成（教員用マスター）")
+    parser.add_argument("--output", default=str(OUTPUT), help="出力先（既定：C1_cybersecurity_starter.ipynb）")
+    parser.add_argument("--force", action="store_true", help="実行結果が残っている Notebook でも上書きする")
+    args = parser.parse_args()
+    output = Path(args.output)
+    if output.exists() and has_outputs(output) and not args.force:
+        raise SystemExit(f"{output.name} には実行結果が残っています。学生が編集した Notebook の可能性があるため、"
+                         "上書きしません。\n別のファイルに出力する場合は --output、上書きする場合は --force を指定してください。")
+
     nb = new_notebook(cells=cells)
+    for i, cell in enumerate(nb.cells, start=1):
+        cell.id = f"cell-{i:03d}"   # 再生成しても同じ内容になるよう、セル ID を連番で固定する
     nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
     nb.metadata["language_info"] = {"name": "python"}
     nbformat.validate(nb)
-    nbformat.write(nb, OUTPUT)
+    nbformat.write(nb, output)
     n_md = sum(c.cell_type == "markdown" for c in cells)
     n_code = sum(c.cell_type == "code" for c in cells)
-    print(f"作成: {OUTPUT.name}（Markdown セル {n_md} 個、コードセル {n_code} 個）")
+    print(f"作成: {output.name}（Markdown セル {n_md} 個、コードセル {n_code} 個）")
 
 
 if __name__ == "__main__":

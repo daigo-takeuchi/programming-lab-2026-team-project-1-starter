@@ -1,6 +1,8 @@
-# データセット調査報告（Phase 1）
+# データセット調査報告（Phase 1、Phase 2A で更新）
 
 調査日：2026-11-26
+
+> **Phase 2A での更新（要点）：** C-1B・C-1D は Loghub の 2k ログで前処理を完了。C-1C は CSIC HTTP 2010 を保留し、旧教材の人工ログを CSV 化。C-1A・C-1E（CIC-IDS2017）は Phase 2B として、教員の取得後に実施（`cic_ids2017_acquisition_guide.md`）。CIC-Bell-DNS-EXF-2021 は今回取得しない（Level 3 の将来のオプション）。Loghub の利用条件の詳細は `student_distribution_plan.md` 3 章。
 情報の確かさを次の 4 種類で区別する。
 
 - **【公式】** 提供元の公式ページ・公式リポジトリで確認した事項
@@ -13,9 +15,9 @@
 | テーマ | 推奨データ | 取得のしやすさ | 再配布 | 判断 |
 | --- | --- | --- | --- | --- |
 | C-1A | CIC-IDS2017（GeneratedLabelledFlows の Friday 午後） | 教員の登録フォーム入力が必要 | **【未確認】**（IDS2017 のページに再配布の文言なし） | 教員が取得 → 前処理。再配布条件の確認まで配布保留 |
-| C-1B | Loghub OpenSSH_2k | 容易（GitHub から直接、225KB） | 条件付きで可（URL・論文の引用、ライセンス文の同梱）。教育利用が "research or academic work" に含まれるかは教員判断 | **採用を推奨** |
-| C-1C | 既存 `sample_access.log` ＋ 人工 Small Dataset。CSIC HTTP 2010 は保留 | CSIC 公式サイトに接続できず | **【未確認】** | 人工データで先行し、CSIC は教員が入手経路を確認 |
-| C-1D | Loghub Linux_2k ＋ 人工ファイル状態データ | 容易（GitHub から直接、216KB） | C-1B と同じ | **採用を推奨** |
+| C-1B | Loghub OpenSSH_2k | 容易（GitHub から直接、225KB） | 条件付きで配布を想定（URL・論文の引用、ライセンス文の同梱）。公開 GitHub は未確認 | **採用・前処理済み（Phase 2A）** |
+| C-1C | 既存 `sample_access.log`（人工）を CSV 化。CSIC HTTP 2010 は保留 | CSIC 公式サイトに接続できず | 人工データは問題なし。CSIC は【未確認】 | **人工データで実施済み（Phase 2A）** |
+| C-1D | Loghub Linux_2k ＋ 人工ファイル状態データ | 容易（GitHub から直接、216KB） | C-1B と同じ。元の提供サイトは "use for whatever you want" | **採用・前処理済み（Phase 2A）** |
 | C-1E | CIC-IDS2017（C-1A と共用）。CIC-Bell-DNS-EXF-2021 は Level 3 のオプション | 登録フォームが必要 | DNS-EXF は【公式】で再配布可（引用必須）。IDS2017 は【未確認】 | C-1A と同じ原データから作成 |
 
 **必要なダウンロード量（推定）：** Loghub 2k ×2 で 1MB 未満（取得済み）。CIC-IDS2017 の GeneratedLabelledFlows.zip は数百 MB【推定】（500MB を超える場合は事前承認が必要）。CIC-Bell-DNS-EXF-2021 は全体 270.8MB【公式】。PCAP は取得しない。
@@ -46,7 +48,7 @@
 | 項目 | 内容 |
 | --- | --- |
 | 正式名称 | Loghub（OpenSSH） |
-| 提供元 | LogPAI（The Chinese University of Hong Kong ほか）【公式】 |
+| 提供元 | LogPAI（The Chinese University of Hong Kong ほか）【公式】。OpenSSH ログは Loghub の研究室で収集【公式：OpenSSH/README.md】 |
 | 公式 URL | https://github.com/logpai/loghub （OpenSSH の 2k サンプルは `OpenSSH/OpenSSH_2k.log`） |
 | 全体版 | 655,146 行、70.02MiB、Zenodo（https://zenodo.org/records/8196385）【公式】。Loghub-2.0 は https://github.com/logpai/loghub-2.0 |
 | 取得結果 | `OpenSSH_2k.log`（225,216 B）と `OpenSSH_2k.log_structured.csv`（357,677 B）を取得【実ファイル】 |
@@ -87,6 +89,7 @@
 | --- | --- |
 | 公式 URL | https://github.com/logpai/loghub （`Linux/Linux_2k.log`） |
 | 全体版 | 25,567 行、2.25MiB、263.9 日分【公式】→ 全体版でも小さい |
+| 元の提供者 | Public Security Log Sharing Site（Anton Chuvakin 氏）の `/var/log/messages`【公式：Linux/README.md】。同サイトの条件は "public; use for whatever you want"、出典の明記を推奨【公式：同サイトを 2026-11-26 に確認】 |
 | 取得結果 | `Linux_2k.log`（216,485 B）、`Linux_2k.log_structured.csv`（327,804 B）【実ファイル】 |
 | カラム | `LineId, Month, Date, Time, Level, Component, PID, Content, EventId, EventTemplate`【実ファイル】 |
 | 時刻 | `Jun 14 15:16:01` 〜 `Jul 27 14:42:00`。年の情報なし【実ファイル】 |

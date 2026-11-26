@@ -45,8 +45,8 @@ c1-web-attack-detection/
 | 既存ファイル | 移行先・扱い | 時期 |
 | --- | --- | --- |
 | `README.md` | `docs/legacy/README_web_access_log.md`（移動済み）。説明の要点は Notebook 第6章・各章の注意書きへ | Phase 1 済 |
-| `data/sample_access.log` | そのまま。C-1C の追加データ（Level 3）。Phase 2 で `log_parser` を使い CSV 化を検討 | Phase 2 |
-| `log_parser.py` | C-1C Level 3 の教員提供コードとして Notebook に取り込む（正規表現部分を含めて提供） | Phase 3 |
+| `data/sample_access.log` | そのまま維持。`log_parser.parse_line` で `data/c1c/web_access_log_synthetic.csv` に変換済み（C-1C Level 3） | Phase 2A 済 |
+| `log_parser.py` | `scripts/preprocess_c1c.py` から再利用（Phase 2A 済）。Notebook への取り込みは Phase 3 で判断 | 一部済 |
 | `detection.py` | 考え方は C-1A/B/E STEP 3〜4 に移行済み。ファイル自体は旧教材として維持 → 学生配布物からは除外を推奨 | Phase 5 で判断 |
 | `benchmark.py` | `make_records` を Benchmark Dataset 生成（`generate_synthetic_data.py`）に一般化 | Phase 4 |
 | `starter.py` | Notebook に置き換え。旧教材として維持 → `legacy/` への移動を提案 | Phase 5 で判断（要承認） |

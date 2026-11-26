@@ -20,6 +20,7 @@ data/ 以下の CSV について、次の項目を確認し、結果を Markdown
 
 import argparse
 import csv
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -64,44 +65,81 @@ SPECS = {
     },
 }
 
-# Phase 2 で作成予定のファイル（存在しなくてもエラーにしない）
+# ---- Phase 2A で追加した CSV ----
+# "optional"：空欄を許す列（原データに値がない場合）。"public"：公開データ由来（数式に見える値は警告にとどめる）
+LOG_COLUMNS = ["record_id", "source_line", "log_date", "log_time"]
+SPECS.update({
+    "c1b/authentication_small.csv": {
+        "columns": LOG_COLUMNS + ["user_id", "src_host", "dst_host", "auth_type", "result",
+                                  "invalid_user", "repeat_count", "event_type", "message", "label"],
+        "id": "record_id", "int": ["record_id", "source_line", "repeat_count"],
+        "labels": {"unknown"}, "public": True,
+        "allowed": {"result": {"success", "failure"}, "invalid_user": {"yes", "no"},
+                    "auth_type": {"password", "none"}},
+    },
+    "c1b/ssh_events_small.csv": {
+        "columns": LOG_COLUMNS + ["host_id", "process_name", "pid", "event_id", "event_type",
+                                  "message", "label"],
+        "id": "record_id", "int": ["record_id", "source_line"], "labels": {"unknown"}, "public": True,
+    },
+    "c1c/web_access_log_synthetic.csv": {
+        "columns": ["request_id", "source_line", "timestamp", "src_ip", "method", "url", "status",
+                    "response_bytes", "scenario"],
+        "id": "request_id", "int": ["request_id", "source_line", "status"], "labels": None,
+        "optional": ["response_bytes"],
+        "allowed": {"scenario": {"normal", "access_concentration", "error_404_concentration"}},
+    },
+    "c1d/system_events_small.csv": {
+        "columns": LOG_COLUMNS + ["host_id", "process_name", "pid", "event_id", "event_type",
+                                  "message", "label"],
+        "id": "record_id", "int": ["record_id", "source_line"], "labels": {"unknown"}, "public": True,
+        "optional": ["pid"],
+    },
+})
+
+# まだ作成していないファイル（存在しなくてもエラーにしない）
 PLANNED = [
-    "c1a/network_flows_small.csv",
-    "c1b/authentication_small.csv",
-    "c1c/http_requests_small.csv",
-    "c1d/system_events_small.csv",
-    "c1e/data_transfer_small.csv",
+    "c1a/network_flows_small.csv",   # Phase 2B（CIC-IDS2017）
+    "c1e/data_transfer_small.csv",   # Phase 2B（CIC-IDS2017）
 ]
 
 FORMULA_PREFIXES = ("=", "+", "-", "@")
 
 
 def validate_file(rel_path, spec):
-    """1 つの CSV を検証し、(件数, 問題のリスト) を返す"""
+    """1 つの CSV を検証し、(件数, 問題のリスト, 警告のリスト) を返す"""
     path = DATA_DIR / rel_path
-    problems = []
+    problems, warnings = [], []
     try:
         with open(path, encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
             header = reader.fieldnames or []
             rows = list(reader)
     except UnicodeDecodeError:
-        return 0, ["UTF-8 として読めない"]
+        return 0, ["UTF-8 として読めない"], []
 
     if header != spec["columns"]:
         problems.append(f"カラムが仕様と異なる: {header}")
-        return len(rows), problems
+        return len(rows), problems, warnings
     if not rows:
         problems.append("データが 0 件")
 
     seen_ids = set()
+    optional = set(spec.get("optional", []))
     for line_no, row in enumerate(rows, start=2):   # 1 行目はヘッダー
         for column in spec["columns"]:
             value = row[column]
             if value is None or value == "":
-                problems.append(f"{line_no} 行目: {column} が空欄")
+                if column not in optional:
+                    problems.append(f"{line_no} 行目: {column} が空欄")
             elif value.startswith(FORMULA_PREFIXES):
-                problems.append(f"{line_no} 行目: {column} が数式として解釈されうる文字で始まる")
+                message = f"{line_no} 行目: {column} の値 {value[:20]!r} が数式として解釈されうる文字で始まる"
+                (warnings if spec.get("public") else problems).append(message)
+        if "log_date" in row:
+            if not re.fullmatch(r"(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])", row["log_date"]):
+                problems.append(f"{line_no} 行目: log_date が MM-DD 形式ではない")
+            if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d:[0-5]\d", row["log_time"]):
+                problems.append(f"{line_no} 行目: log_time が HH:MM:SS 形式ではない")
         row_id = row[spec["id"]]
         if row_id in seen_ids:
             problems.append(f"{line_no} 行目: ID {row_id} が重複")
@@ -121,7 +159,7 @@ def validate_file(rel_path, spec):
         for column, allowed in spec.get("allowed", {}).items():
             if row[column] not in allowed:
                 problems.append(f"{line_no} 行目: {column} の値 {row[column]!r} が未定義")
-    return len(rows), problems
+    return len(rows), problems, warnings
 
 
 def build_report():
@@ -135,16 +173,20 @@ def build_report():
             lines.append(f"| `data/{rel_path}` | - | - | **ファイルなし** |")
             has_problem = True
             continue
-        count, problems = validate_file(rel_path, spec)
+        count, problems, warnings = validate_file(rel_path, spec)
         size = path.stat().st_size
         result = "OK" if not problems else f"問題 {len(problems)} 件"
+        if warnings:
+            result += f"（警告 {len(warnings)} 件）"
+            details.append(f"### data/{rel_path}（警告：原データの値のため変更していない）")
+            details.extend(f"- {w}" for w in warnings[:20])
         lines.append(f"| `data/{rel_path}` | {count} | {size:,} B | {result} |")
         if problems:
             has_problem = True
             details.append(f"### data/{rel_path}")
             details.extend(f"- {p}" for p in problems[:20])
     for rel_path in PLANNED:
-        status = "存在する（Phase 2 で検証項目を追加すること）" if (DATA_DIR / rel_path).exists() else "未作成（Phase 2 予定）"
+        status = "存在する（検証項目を追加すること）" if (DATA_DIR / rel_path).exists() else "未作成（Phase 2B 予定）"
         lines.append(f"| `data/{rel_path}` | - | - | {status} |")
     report = "\n".join(lines)
     if details:

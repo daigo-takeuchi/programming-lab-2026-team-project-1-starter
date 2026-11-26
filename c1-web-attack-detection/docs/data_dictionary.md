@@ -71,14 +71,69 @@
 
 意図した特徴：`192.0.2.43` = 社外 `203.0.113.200` へ大量送信（情報流出を模したもの）、`192.0.2.44` = バックアップサーバー `198.51.100.90` へ大量送信（正常、誤検出の例）。
 
-## Phase 2 で作成予定の Small Dataset（暫定）
+## C-1B：`data/c1b/authentication_small.csv`（公開ログ Loghub OpenSSH を加工、525 件、Git 管理外）
 
-| ファイル | 予定カラム | 由来 | ラベル |
+認証の**試行**を表す行だけ（1 行 = 1 回の試行の記録）。抽出基準は `docs/preprocessing_report.md` 3 章。
+
+| カラム | 型 | 意味 | 例 |
 | --- | --- | --- | --- |
-| `c1a/network_flows_small.csv` | Tiny と同じ | CIC-IDS2017 | 元の Label を `benign` / 攻撃名に整理 |
-| `c1b/authentication_small.csv` | Tiny と同じ（`dst_host` は匿名 ID） | Loghub OpenSSH | **なし**（`label` 列は `unknown`） |
-| `c1c/http_requests_small.csv` | Tiny と同じ | CSIC 2010（保留）／人工 | 由来による |
-| `c1d/system_events_small.csv` | `record_id, timestamp, host_id, process_name, event_type, message, label` | Loghub Linux | **なし**（`unknown`） |
-| `c1e/data_transfer_small.csv` | Tiny と同じ | CIC-IDS2017 | 情報流出ラベルはなし（`unknown` または元ラベル） |
+| `record_id` | 整数 | 教材用の通し番号 | `1` |
+| `source_line` | 整数 | 原データ（OpenSSH_2k.log）の行番号 | `6` |
+| `log_date` | 文字列 MM-DD | 日付。**原データに年がないため年なし** | `12-10` |
+| `log_time` | 文字列 HH:MM:SS | 時刻 | `06:55:48` |
+| `user_id` | 文字列 | 試行されたユーザー名（原データのまま。実在アカウント 1 件のみ `user-001` に匿名化）。空白で始まるもの（` 0101`）もある | `root` |
+| `src_host` | 文字列 | 接続元 IP の匿名 ID | `ip-001` |
+| `dst_host` | 文字列 | サーバー名（原データのまま） | `LabSZ` |
+| `auth_type` | 文字列 | `password` / `none` | `password` |
+| `result` | 文字列 | `success` / `failure`。**認証の結果であって、攻撃の正解ではない** | `failure` |
+| `invalid_user` | 文字列 | `yes` = サーバーに存在しないユーザー名での試行 | `yes` |
+| `repeat_count` | 整数 | 通常 1。「message repeated N times」の行は N | `5` |
+| `event_type` | 文字列 | `accepted_password`、`failed_password`、`failed_password_invalid_user`、`failed_none_invalid_user`、`failed_password_repeated` | `failed_password` |
+| `message` | 文字列 | 元のメッセージ（IP・ホスト名は匿名化済み） | `Failed password for root from ip-005 port 42393 ssh2` |
+| `label` | 文字列 | 常に `unknown`（正解ラベルなし） | `unknown` |
 
-`timestamp` は原データに年がない場合、仮の年を付けたことを記録する（Loghub）。
+## C-1B：`data/c1b/ssh_events_small.csv`（同上、2,000 件、Git 管理外）
+
+sshd の全イベント。列は `record_id, source_line, log_date, log_time, host_id（LabSZ）, process_name（sshd）, pid, event_id（Loghub の EventId）, event_type, message, label（unknown）`。
+`event_type`（11 種類）：`auth_failure` 524、`disconnect` 513、`pam_auth_failure` 504、`invalid_user` 226、`pam_unknown_user` 135、`reverse_dns_failed` 85、`max_retries` 7、`too_many_failures` 3、`auth_success`・`session_opened`・`session_closed` 各 1。
+**イベントの種類の分類であり、`authentication_small.csv` の `result`（成功・失敗）とは別のもの。**
+
+## C-1C：`data/c1c/web_access_log_synthetic.csv`（人工データ、47 件）
+
+旧 C1 教材の `data/sample_access.log` を変換したもの。
+
+| カラム | 型 | 意味 | 例 |
+| --- | --- | --- | --- |
+| `request_id` | 整数 | 通し番号 | `1` |
+| `source_line` | 整数 | sample_access.log の行番号 | `1` |
+| `timestamp` | 文字列（ISO 8601、+09:00） | 日時 | `2026-11-15T10:00:05+09:00` |
+| `src_ip` | 文字列 | 接続元（RFC 5737） | `192.0.2.10` |
+| `method`、`url` | 文字列 | HTTP メソッド、パス | `GET`、`/index.html` |
+| `status` | 整数 | HTTP ステータスコード | `404` |
+| `response_bytes` | 整数または空欄 | 応答サイズ。空欄 = 原ログで `-`（データなし）。このログでは空欄の行はない | `2048` |
+| `scenario` | 文字列 | 作成者が IP ごとに意図したパターン：`normal`、`access_concentration`、`error_404_concentration`。**攻撃の正解ラベルではない** | `normal` |
+
+列名は Tiny Dataset（`http_requests_tiny.csv`）と同じものを使い、学生の関数を両方に使えるようにした。
+
+## C-1D：`data/c1d/system_events_small.csv`（公開ログ Loghub Linux を加工、2,000 件、Git 管理外）
+
+| カラム | 型 | 意味 | 例 |
+| --- | --- | --- | --- |
+| `record_id`、`source_line` | 整数 | 通し番号、原データの行番号 | `1` |
+| `log_date`、`log_time` | 文字列 | 日付（MM-DD、年なし）と時刻 | `06-14`、`15:16:01` |
+| `host_id` | 文字列 | ホスト名（原データの Level 列の値） | `combo` |
+| `process_name` | 文字列 | Loghub の Component（30 種類） | `sshd(pam_unix)` |
+| `pid` | 文字列（空欄あり） | プロセス ID。原データにない行（151 行）は空欄 | `19939` |
+| `event_id` | 文字列 | Loghub の EventId | `E16` |
+| `event_type` | 文字列 | メッセージの文言による分類（12 種類。`preprocess_c1d.py` の RULES） | `auth_failure` |
+| `message` | 文字列 | 元のメッセージ（IP・ホスト名は匿名化済み） | `authentication failure; ... rhost=ip-001` |
+| `label` | 文字列 | 常に `unknown` | `unknown` |
+
+ファイル変更・ランサムウェアの記録やラベルは**含まれない**。
+
+## Phase 2B で作成予定（CIC-IDS2017）
+
+| ファイル | 予定カラム | ラベル |
+| --- | --- | --- |
+| `c1a/network_flows_small.csv` | Tiny と同じ（`packet_count` と `byte_count` の定義は取得後に確定） | 元の Label を整理（BENIGN → `benign` など） |
+| `c1e/data_transfer_small.csv` | Tiny と同じ（`byte_count` = 順方向のバイト数の予定。定義を確認してから確定） | 情報流出のラベルはなし（`unknown` または元のラベル） |

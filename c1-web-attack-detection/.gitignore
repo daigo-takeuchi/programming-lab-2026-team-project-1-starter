@@ -45,3 +45,10 @@ results/*
 solutions/
 *_solution.ipynb
 *_solutions.py
+
+# ---- Phase 2A：Loghub 由来の前処理済み CSV ----
+# 公開 GitHub での再配布の可否が確認できるまで、Git で管理しない（docs/student_distribution_plan.md）。
+# 再生成：python3 scripts/download_datasets.py && python3 scripts/preprocess_c1b.py && python3 scripts/preprocess_c1d.py
+data/c1b/authentication_small.csv
+data/c1b/ssh_events_small.csv
+data/c1d/system_events_small.csv

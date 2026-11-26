@@ -4,9 +4,9 @@
 
 C-1 Cybersecurity Programming Starter（プログラミング演習Ⅰ チーム開発課題）
 
-> **開発中（Phase 1：骨格版）**
-> 章の構成、課題の設計、関数のひな形、人工データ（Mini・Tiny Dataset）を用意しています。
-> 公開データを加工した Small Dataset、実行時間の比較用コードなどは、今後追加します。
+> **開発中（骨格版）**
+> 章の構成、課題の設計、関数のひな形、人工データ（Mini・Tiny Dataset）、一部の公開ログ（C-1B・C-1D）を用意しています。
+> C-1A・C-1E の公開データ、実行時間の比較用コードなどは、今後追加します。
 
 > 🛡️ **この教材の目的は「防御・監視」です。**
 > 使うデータは、保存済みのデータ・公開された研究用データ・人工データだけです。
@@ -42,7 +42,9 @@ Python を使って、コンピュータの記録（ログ）から「いつも�
 1. リポジトリを取得します（**Notebook だけでなく、data フォルダを含む一式**が必要です）。
 2. VS Code で `c1-web-attack-detection/C1_cybersecurity_starter.ipynb` を開きます。
 3. 右上の「カーネルの選択」で Python 3.11〜3.13 を選びます（`ipykernel` が必要です）。
-4. **第0章〜第3章**を上から順に実行し、次に**担当テーマの章**を実行します。
+4. **第0章〜第3章**を上から順に実行し、次に**担当テーマの章**を実行します（第0章の「0.5 学習ルート」に、テーマ別の順番があります）。
+
+**Level 1（必須）だけで、基本的なセキュリティ監視プログラムが完成します。** 全5テーマを実行する必要はありません。
 
 グラフを表示したい場合だけ、`pip install -r requirements.txt` で matplotlib を入れてください。
 基本課題は Python の標準ライブラリだけで実行できます。
@@ -92,8 +94,14 @@ c1-web-attack-detection/
 
 ## 6. データの出典
 
-公開データを使う部分（Small Dataset）は、各データの提供元の条件に従って利用します。
-出典と引用方法は `docs/dataset_sources.md` にまとめています（Phase 2 で確定）。
+公開データを使う部分（Level 3）は、各データの提供元の条件に従って利用します。
+
+- C-1B・C-1D：**Loghub**（https://github.com/logpai/loghub）。成果を発表するときは、次の論文を引用してください。
+  Jieming Zhu, Shilin He, Pinjia He, Jinyang Liu, Michael R. Lyu. Loghub: A Large Collection of System Log Datasets for AI-driven Log Analytics. ISSRE 2023.
+  C-1D の Linux ログの元の提供者は Public Security Log Sharing Site（Anton Chuvakin 氏）です。
+- C-1A・C-1E：CIC-IDS2017（準備中）。
+
+ライセンス文は `data/c1b/LICENSE_LOGHUB.txt` と `data/c1d/LICENSE_LOGHUB.txt` にあります。詳しくは `data/README.md` を読んでください。
 
 ## 7. 旧 C1 教材について
 

@@ -40,7 +40,7 @@
 | --- | --- | --- | --- | --- | --- |
 | C-1A | どのコンピュータが異常に多く通信しているか／多数の宛先ポートに通信しているか | `filter_by_source`、`count_connections`、`summarize_connections_baseline`、`detect_high_frequency_sources` | 辞書集計、集合によるポート種類数、ポートスキャン候補 | 時間窓、スライディングウィンドウ、通信集中、DDoS | CIC-IDS2017（フロー CSV） |
 | C-1B | どのユーザーが何度もログインに失敗しているか | `filter_failed_logins`、`count_failed_logins`、`summarize_failures_baseline`、`detect_suspicious_users` | 辞書集計、成功・失敗の集計、接続元別 | 時間内の失敗集中、スプレー、失敗後の成功、異常度 | Loghub OpenSSH 2k |
-| C-1C | どの Web リクエストに通常と違う特徴があるか | `get_url_length`、`detect_long_urls`、`contains_pattern`、`detect_suspicious_requests` | ルールの関数化・リスト管理、複数条件、異常度 | SQLi/XSS の特徴分析、誤検出・検出漏れ、性能評価 | 既存データ、CSIC HTTP 2010 |
+| C-1C | どの Web リクエストに通常と違う特徴があるか | `get_url_length`、`detect_long_urls`、`contains_any_pattern`、`detect_suspicious_requests` | ルールの関数化・リスト管理、複数条件、異常度 | SQLi/XSS の特徴分析、誤検出・検出漏れ、性能評価 | 既存データ、CSIC HTTP 2010 |
 | C-1D | 変更前後でどのファイルが追加・削除・変更されたか | `file_exists`、`find_added_files`、`find_deleted_files`、`compare_file_lists_baseline` | 集合・辞書、疑似ハッシュによる変更検出 | Linux ログ、変更の集中、ランサムウェアの兆候 | Loghub Linux |
 | C-1E | どのコンピュータが異常に大量のデータを送信しているか | `filter_transfers_by_source`、`sum_transfer_bytes`、`summarize_transfer_baseline`、`detect_large_transfers` | 辞書集計、通信先別、回数と量の比較 | 通常時との比較、時間窓、移動平均、DNS | CIC-Bell-DNS-EXF-2021、CIC-IDS2017 共用 |
 
@@ -54,6 +54,8 @@
 | Benchmark | 1,000〜100,000 | 必要時に生成 | 人工（シード固定） | 実行時間・計算量の比較 |
 
 - 基本課題は公開データなしで完了できる。Small がなくてもエラーで止まらない。
+- 公開データの準備は Phase 2A（Loghub・既存データ、完了）と Phase 2B（CIC-IDS2017、教員の取得後）に分ける。**Phase 2B は Phase 3 の開始条件にしない。**
+- C-1C は CSIC HTTP 2010 を保留し、人工データ（Tiny と旧教材のアクセスログ）で Level 3 まで進められるようにする。
 - 実運用の公開ログ／研究用の公開データ／加工データ／人工テストデータ／人工ベンチマークデータを区別する。
 - 原データにない情報を捏造しない。未知ラベルを正常にしない。学生が計算すべき値を前処理で計算しない。
 - 再配布条件が不明確なデータは学生配布物に入れない。

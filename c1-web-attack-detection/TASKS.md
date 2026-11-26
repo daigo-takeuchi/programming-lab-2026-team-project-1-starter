@@ -16,11 +16,12 @@
 | --- | --- | --- | --- | --- |
 | C-1A | `filter_by_source` | `count_connections` | `summarize_connections_baseline` | `detect_high_frequency_sources` |
 | C-1B | `filter_failed_logins` | `count_failed_logins` | `summarize_failures_baseline` | `detect_suspicious_users` |
-| C-1C | `get_url_length` | `detect_long_urls` | `contains_pattern` | `detect_suspicious_requests` |
+| C-1C | `get_url_length` | `detect_long_urls` | `contains_any_pattern` | `detect_suspicious_requests` |
 | C-1D | `file_exists` | `find_added_files` | `find_deleted_files` | `compare_file_lists_baseline` |
 | C-1E | `filter_transfers_by_source` | `sum_transfer_bytes` | `summarize_transfer_baseline` | `detect_large_transfers` |
 
-課題1・2 は他の課題に依存しません。課題3 は課題1または2を、課題4 は課題3の結果の形を使います。
+課題1・2 は他の課題に依存しません。課題3・4 は、テーマによって前の課題の関数や結果を使います（各課題の説明に書いてあります）。
+Level 1 だけで、「データを読む → 数える → 閾値で候補を見つける」基本的な監視プログラムが完成します。
 **4 人チームなら 1 人 1 課題**、3 人なら課題3・4 を 2 人で分担する、などの分け方ができます。
 
 ## 3. 役割分担の例

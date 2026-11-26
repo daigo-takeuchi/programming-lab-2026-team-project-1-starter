@@ -118,6 +118,38 @@ class TestStructure(unittest.TestCase):
                     self.assertIsNone(re.search(rf"\b{prefix}(records|tiny|small)\b", code_text))
 
 
+@unittest.skipUnless(importlib.util.find_spec("nbformat"), "nbformat がないためスキップ")
+class TestBuildScript(unittest.TestCase):
+
+    def run_build(self, *args):
+        import subprocess
+        import sys
+        return subprocess.run([sys.executable, str(PROJECT_DIR / "scripts" / "build_notebook.py"), *args],
+                              capture_output=True, text=True)
+
+    def test_regenerated_notebook_matches(self):
+        """生成スクリプトから作り直した Notebook が、リポジトリの Notebook と同じ（再生成可能）"""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "nb.ipynb"
+            result = self.run_build("--output", str(out))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(out.read_text(encoding="utf-8"), NOTEBOOK.read_text(encoding="utf-8"))
+
+    def test_refuses_to_overwrite_executed_notebook(self):
+        """実行結果が残っている（学生が使った）Notebook は上書きしない"""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "student.ipynb"
+            nb = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+            first_code = next(c for c in nb["cells"] if c["cell_type"] == "code")
+            first_code["outputs"] = [{"output_type": "stream", "name": "stdout", "text": "学生の実行結果"}]
+            first_code["execution_count"] = 1
+            out.write_text(json.dumps(nb, ensure_ascii=False), encoding="utf-8")
+            before = out.read_text(encoding="utf-8")
+            result = self.run_build("--output", str(out))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(out.read_text(encoding="utf-8"), before)
+
+
 @unittest.skipUnless(CAN_EXECUTE, "nbformat・nbclient・ipykernel がないため実行テストをスキップ")
 class TestExecution(unittest.TestCase):
 
@@ -149,6 +181,21 @@ class TestExecution(unittest.TestCase):
                 subset = [c for c, ch in zip(cells, chapters) if ch is not None and (ch <= 3 or ch == n)]
                 output = self.run_cells(subset, tmp)
                 self.assertNotIn("[注意] ファイルが見つかりません", output)
+
+    def test_each_theme_without_small_dataset(self):
+        """Small Dataset（公開データ・人工ログ）がなく、Tiny Dataset だけがある場合も実行できる"""
+        cells = load_cells()
+        chapters = chapter_of_cells(cells)
+        for n, data_dir in THEME_DATA.items():
+            with self.subTest(theme=THEMES[n]), tempfile.TemporaryDirectory() as tmp:
+                dest = Path(tmp) / "data" / data_dir
+                dest.mkdir(parents=True)
+                for csv_path in (PROJECT_DIR / "data" / data_dir).glob("*_tiny.csv"):
+                    shutil.copy(csv_path, dest)
+                subset = [c for c, ch in zip(cells, chapters) if ch is not None and (ch <= 3 or ch == n)]
+                output = self.run_cells(subset, tmp)
+                self.assertIn("このデータはまだ用意されていません", output)
+                self.assertIn("Tiny Dataset", output)
 
     def test_without_data_folder(self):
         """data フォルダがなくても（Notebook だけを開いた場合）、エラーで止まらない"""

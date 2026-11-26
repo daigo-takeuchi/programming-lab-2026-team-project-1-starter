@@ -5,7 +5,9 @@
 
 1. `CLAUDE.md`（このファイル）
 2. `docs/development_status.md`（現在の Phase と、次にやること）
-3. `docs/migration_plan.md`（旧教材からの移行計画）
+3. `docs/implementation_plan.md`（Phase の分け方と計画）
+4. `docs/migration_plan.md`（旧教材からの移行計画）
+5. データを扱うときは `docs/dataset_feasibility_report.md` と `docs/student_distribution_plan.md`
 
 詳しい仕様は `docs/project_specification.md` にある。
 
@@ -39,7 +41,9 @@
 
 ## Notebook の編集方法
 
-- Notebook は `scripts/build_notebook.py` から生成する。**ipynb を直接編集しない**（再生成で上書きされる）。
+- Notebook は `scripts/build_notebook.py`（**教員用マスター**）から生成する。**ipynb を直接編集しない**（再生成で上書きされる）。
+- 配布後の Notebook は**学生が直接編集する成果物**。学生の Notebook に生成スクリプトで上書きしない（実行結果が残っている Notebook への上書きはスクリプトが拒否する）。`build_notebook.py` は学生に配布しない。
+- セル ID は連番で固定している（再生成しても同じ内容になる。テストで確認）。
 - 変更後は必ず：`.venv/bin/python scripts/build_notebook.py` → `.venv/bin/python -m unittest discover -s tests -t .`
 - 出力（outputs）を含めずにコミットする（ビルドスクリプトは出力なしで書き出す）。
 
@@ -57,17 +61,22 @@
 - 学生が計算すべき集計値や異常度を前処理で計算済みにしない。
 - **再配布条件が確認できない公開データは、学生配布用ファイルに入れない。** 原データは `data/raw/`（Git 管理外）。
 - Tiny Dataset は `scripts/generate_synthetic_data.py`（シード固定）で生成し、`scripts/validate_datasets.py` で検証する。
+- 人工データのファイル名には `_tiny` か `_synthetic` を付け、公開データ由来の `_small` と区別する。
+- 公開データの準備は 2 段階：**Phase 2A**（Loghub OpenSSH/Linux、既存の人工ログ。完了）と **Phase 2B**（CIC-IDS2017、教員の取得と利用条件の確認の後）。**Phase 2B は Phase 3 の開始条件ではない。**
+- Loghub 由来の CSV（`c1b/*_small.csv`、`c1d/system_events_small.csv`）は、公開 GitHub での再配布が未確認のため **Git 管理外**。`download_datasets.py` → `preprocess_c1b.py`・`preprocess_c1d.py` で再生成する。ライセンス文（`LICENSE_LOGHUB.txt`）を同じフォルダに置く。
+- 取得しないもの（今回の方針）：CIC-Bell-DNS-EXF-2021、CSIC HTTP 2010、LANL、PCAP。
 
 ## ストレージ・依存関係
 
-- 次の作業は事前に教員の承認を得る：500MB 超のファイルのダウンロード、合計 2GB 超の取得・展開、PCAP の取得、大規模な依存パッケージの追加。
-- Windows 側 C: ドライブの空きは少ない（Phase 1 時点で約 6GB）。WSL の Linux 側に保存する。
+- 次の作業は事前に教員の承認を得る：**100MB を超える新規データの取得**（Phase 2A 以降のルール）、PCAP の取得、大規模な依存パッケージの追加。
+- **Windows 側 C: ドライブの空きは 2.6GB**（2026-11-26）。WSL の仮想ディスクも C: 上にあるため、Linux 側の空き表示（926GB）は実際には使えない。展開時の一時ファイルを含めた最大使用量を考える。
+- CIC 系データのフォームの奥のディレクトリを直接たどるなど、アクセス制限を回避する操作はしない。
 - 開発用の Python 環境はこのディレクトリの `.venv/`（Git 管理外、`requirements-dev.txt`）。グローバル環境や他プロジェクトの仮想環境を変更しない。
 - CIC 系データのダウンロードには氏名・メールアドレス等の登録フォームがある。**Claude が教員の個人情報をフォームに送信しない。**教員が手動で行う。
 
 ## Git
 
-- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ。
+- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ（Phase 1 は `df5a1dc` でコミット済み）。
 - 承認なしに行わない：push、マージ、`reset --hard`、`git clean`、履歴の書き換え、force push、ブランチ・タグの削除、リモート設定・リポジトリ名・公開範囲の変更、外部リポジトリの作成。
 - 親リポジトリの `.gitignore` は `*.log` と `textbook/**/*.py` を除外している点に注意。
 
