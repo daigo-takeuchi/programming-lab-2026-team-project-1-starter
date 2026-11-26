@@ -83,8 +83,8 @@ def hints(h1, h2, h3):
 # 第0章
 # ======================================================================
 md("""
-# F-1：キャリア・ライフイベント・世代間資源継承のシミュレーションと最適化
-## Simulation and Optimization of Career Paths, Life Events, and Intergenerational Resource Transfer
+# F-1：キャリア・ライフイベント・世代間資源継承の意思決定と最適化
+## Decision-Making and Optimization of Career Paths, Life Events, and Intergenerational Resource Transfer
 
 プログラミング演習Ⅰ　チーム開発課題　統合 Starter Notebook
 
@@ -93,6 +93,7 @@ md("""
 > - 計算結果は、**設定した仮定によって変わります**。将来の所得・資産を予測するものではありません。
 > - 特定の進学先、職業、家族の形、住宅の選び方、相続の方法を**すすめるものではありません**。
 > - 自分や家族の実際の所得・資産・健康状態などを入力する必要はありません。**仮想の人物・家族**を使います。
+> - この教材は、個人の人生設計や資産運用について**具体的な助言をするものではありません**。仮定にもとづく**プログラミング演習**です。
 """)
 md("""
 # 第0章　本演習の目的と進め方
@@ -147,6 +148,7 @@ md("""
 | 【教員提供コード】 | 準備・表示・グラフのためのコード | 編集しない（実行するだけ） |
 | 【学生実装課題：Level 1／2】 | 関数を完成させる課題 | **編集する** |
 | 【動作確認】 | 実装した関数の結果を確かめる | 編集しない |
+| 【練習：Level 1】 | 実装した関数を for 文で組み合わせる練習（F-1B）。新しい関数は作らない | **編集する** |
 | 【考察課題】 | 結果について考え、文章で答える | 答えを書く |
 | 【発展課題：Level 3】 | チームで選ぶ発展的な課題 | チームで決める |
 
@@ -549,7 +551,7 @@ md(f"""
 | `measure_time(func, args, repeat)` | `func(*args)` を何回か実行し、実行時間の**中央値**（秒）を返す |
 | `compare_speed(baseline, improved, make_input, sizes)` | 2 つの関数を**同じ入力**で動かし、結果が同じか確かめてから実行時間を比べる |
 | `jp(japanese, english)` | 日本語フォントがあれば日本語、なければ英語のラベルを返す |
-| `plot_lines(x, series, title, xlabel, ylabel)` | 折れ線グラフ（matplotlib がなければ文字で表示） |
+| `plot_lines(x, series, title, xlabel, ylabel, log=False)` | 折れ線グラフ（`log=True` で対数軸。matplotlib がなければ文字で表示） |
 | `plot_bars(names, values, title, ylabel)` | 棒グラフ |
 | `plot_scatter(points, title, xlabel, ylabel, highlight)` | 散布図。`highlight` の点を強調する |
 | `plot_hist(values, title, xlabel, line)` | ヒストグラム（値の分布）。`line` の位置に縦線を引く |
@@ -603,16 +605,20 @@ def jp(japanese, english):
     return japanese if JAPANESE_FONT else english
 
 
-def plot_lines(x, series, title, xlabel, ylabel):
-    """折れ線グラフ。series は {系列の名前: 値のリスト}"""
+def plot_lines(x, series, title, xlabel, ylabel, log=False):
+    """折れ線グラフ。series は {系列の名前: 値のリスト}。log=True なら両方の軸を対数にする"""
     if not HAS_MATPLOTLIB:
         for name, values in series.items():
-            print(name, [round(v, 1) for v in values[:10]], "...")
+            print(name, [round(v, 1) if abs(v) >= 1 else float(f"{v:.3g}") for v in values[:10]], "...")
         return
     fig, ax = plt.subplots(figsize=(7, 4))
     for name, values in series.items():
-        ax.plot(x, values, marker="o", markersize=3, label=name)
-    ax.axhline(0, color="gray", linewidth=0.8)
+        ax.plot(x[:len(values)], values, marker="o", markersize=3, label=name)
+    if log:
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+    else:
+        ax.axhline(0, color="gray", linewidth=0.8)
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -777,6 +783,12 @@ def theme_chapter(t):
        "Mini Dataset で `[OK]` になっても、もっと多いデータや境界条件では間違えることがあります。"
        "期待値は、教員が別の方法で確かめた値です。")
     code(t["tiny_check"])
+    if "practice" in t:
+        md(textwrap.dedent(t["practice"]["explain"]).strip())
+        code(t["practice"]["code"])
+        hints(*t["practice"]["hints"])
+        md(CHECK)
+        code(t["practice"]["check"])
     md("### Tiny Dataset に適用する\n\n" + TEACHER)
     code(t["tiny_apply"])
     md("### 結果をグラフで確認する\n\n" + TEACHER + " 関数が未実装のときは、グラフを表示せずに説明だけを表示します。")
@@ -798,13 +810,27 @@ def theme_chapter(t):
     md(f"## {n}.9 {SECTIONS[8]}\n\n**対応レベル：Level 3（発展課題）**\n\n" + textwrap.dedent(t["step5"]).strip())
     md(TEACHER)
     code(t["small_code"])
-    md(f"{LEVEL3}\n\n" + textwrap.dedent(t["step5_tasks"]).strip())
+    md(f"### 公開統計への橋渡し演習\n\n{LEVEL3}（独自機能の候補にもなります）\n\n" + textwrap.dedent(t["bridge"]["explain"]).strip())
+    if t["bridge"].get("teacher_code"):
+        md(TEACHER + " データの確認だけを行います。学生が行う計算（年額への変換・純資産など）はしません。")
+        code(t["bridge"]["teacher_code"])
+    md(textwrap.dedent(t["bridge"]["tasks"]).strip())
+    code(t["bridge"]["scaffold"])
+    md(f"### その他の発展課題\n\n{LEVEL3}\n\n" + textwrap.dedent(t["step5_tasks"]).strip())
 
+    md(f"### モデルの妥当性と限界\n\n" + LIMITS_INTRO + "\n\n" + textwrap.dedent(t["limits"]).strip())
     md(f"## {n}.10 {SECTIONS[9]}\n\n" + textwrap.dedent(t["discussion"]).strip()
        + "\n\n### チーム独自の機能の候補（1 つ以上を必ず実装する）\n\n" + textwrap.dedent(t["team_features"]).strip()
        + "\n\n独自の機能を作ったら、**入力・処理・出力**、使ったアルゴリズムと計算量、動作確認の方法、"
          "モデルの仮定と限界を Notebook に書いてください。旧教材や他の資料のコードを参考にした場合は、"
          "**出典と、自分たちが変更した点**を明記します。")
+
+
+LIMITS_INTRO = textwrap.dedent("""
+    **「計算が正しい」ことと「現実の予測として妥当である」ことは別です。** 動作確認が `[OK]` になったことは、
+    プログラムが**決めた仮定どおりに**計算していることを示すだけで、将来の所得・支出・資産を当てることを示すものではありません。
+    この教材は、個人の人生設計や資産運用について具体的な助言をするものではなく、仮定にもとづくプログラミング演習です。
+    """).strip()
 
 
 def small_loader(var, rel_path, int_columns, float_columns, note, show_filter=None):
@@ -1297,6 +1323,66 @@ F1A = {
     4. **IT エンジニアのキャリアモデル**：職種・役職ごとの年収の仮定を作り、昇進の時期を比べる。
     5. **労働時間・失業リスクを含む比較**：所得だけでなく労働時間や休職の年を入れて比べる（乱数を使う場合はシードを固定する）。
     """,
+    "bridge": {
+        "explain": """
+        Small Dataset（公開賃金統計）を、課題2・3 の考え方で使ってみます。ただし、**データの形が課題の関数の入力と違う**ので、そのままでは使えません。
+
+        | | 課題2 `salary_at_age(career, age, retirement_age)` の入力 | Small Dataset `salary_small` |
+        | --- | --- | --- |
+        | 年収 | `initial_salary`（万円／年）と一定の昇給率 `annual_growth` | 月額 `monthly_cash_earnings`（万円／月）と年間賞与 `annual_special_earnings`（万円／年）が**別の列** |
+        | 年齢 | 1 歳ごと | 5 歳ごとの年齢階級（`age_min`〜`age_max`。「～19歳」「70歳～」は片方が空欄） |
+        | 意味 | 仮想の 1 人の年収の推移 | 2025 年に**異なる年齢の人たち**の平均（横断的なデータ） |
+
+        変換の考え方：① 年齢階級ごとに年額（月額 × 12 + 年間賞与）を求める → ② 年齢階級の範囲の各年齢に、その年額を当てはめた表を作る
+        → ③ 課題3 と同じく「1 年ずつ足す」で累積所得を求める。② の表から年収を読む関数は、課題2 の代わりに自分たちで作ります。
+        """,
+        "teacher_code": '''
+        # 【教員提供コード】F-1A：Small Dataset の確認（年額への変換や累積の計算は行わない）
+        if salary_small:
+            codes = []
+            for r in salary_small:
+                if r["education_code"] not in codes:
+                    codes.append(r["education_code"])
+            print("学歴の区分（education_code）:", codes)
+            EDUCATION = "university"          # 確認したい学歴の区分に変えてよい
+            show = lambda v: "空欄" if v is None else v    # 空欄（None）を見やすく表示する
+            print(f"学歴 {EDUCATION}：年齢階級 | 範囲 | 月額（万円/月） | 年間賞与（万円/年）")
+            for r in salary_small:
+                if r["education_code"] == EDUCATION:
+                    print(f'{r["age_group"]:<8} | {show(r["age_min"])}〜{show(r["age_max"])} | '
+                          f'{show(r["monthly_cash_earnings"])} | {show(r["annual_special_earnings"])}')
+            blanks = sum(1 for r in salary_small for k in ("monthly_cash_earnings", "annual_special_earnings") if r[k] is None)
+            print("給与の空欄（統計がない）:", blanks, "個。0 ではありません。")
+        else:
+            print("Small Dataset がありません。この演習は省略してかまいません（Level 1・2 には影響しません）。")
+        ''',
+        "tasks": """
+        **手順**（すべてを実装する必要はありません。独自機能にしてもかまいません）
+
+        1. **月額給与と年間賞与の確認**：上の表で、月額と賞与の単位を確かめる。月額は「きまって支給する現金給与額」と「所定内給与額」のどちらを使うかを決め、理由を書く。
+        2. **年間給与への変換**：年齢階級ごとに「月額 × 12 + 年間賞与」を計算する（月額だけを 12 倍した値と区別する）。
+        3. **年齢ごとの年収表**：`{年齢: 年収}` の辞書を作る。範囲の端（～19歳、70歳～）と空欄の扱いを決めて、コメントに書く。
+        4. **累積所得モデルへの応用**：開始年齢から退職年齢まで 1 年ずつ足して累積所得を求め、課題3 の仮定のモデル（昇給率一定）と表やグラフで比べる。
+
+        > 年間賞与は「前年 1 年間」の額です。また、この曲線は**同じ人の生涯の推移ではありません**。学歴による差を、進学の効果（因果関係）と断定しないでください。
+        """,
+        "scaffold": '''
+        # 【発展課題：Level 3】F-1A 橋渡し演習（チームで書く。完成コードは提供しません）
+        # TODO 1：使う月額の列を決める（理由をコメントに書く）
+        # TODO 2：年齢階級ごとに、年額 = 月額 × 12 + 年間賞与 を求める
+        # TODO 3：{年齢: 年収} の表を作る（範囲の端・空欄の扱いを決める）
+        # TODO 4：開始年齢〜退職年齢の累積所得を求め、課題3 のモデルと比べる
+        ''',
+    },
+    "limits": """
+    | 観点 | このモデルでの扱い | 注意すること |
+    | --- | --- | --- |
+    | 横断的な賃金統計と生涯所得 | Small Dataset は 2025 年の異なる年齢の人の平均。同じ人の追跡ではない | 将来の賃金水準や昇給のしかたの変化は反映されない |
+    | 税・社会保険料 | 省略（額面の所得） | 手取り（可処分所得）は額面より少ない |
+    | 失業・休職・転職 | 省略（毎年働き続ける） | 実際の生涯所得は、より小さく、ばらつく |
+    | 物価の変動 | 省略（すべて同じ年の金額） | 40 年後の 400 万円と、今の 400 万円の価値は違う |
+    | 学歴と所得 | 仮定値、または統計の平均の差 | 因果関係（進学の効果）と断定しない |
+    """,
     "discussion": """
     - 生涯所得が最大の候補と、教育費を引いた累積所得が最大の候補は同じでしたか。違う場合、なぜですか。
     - どの仮定（初年度年収、昇給率、教育費、退職年齢）を変えると、順位や回収年齢が変わりましたか。
@@ -1545,23 +1631,83 @@ F1B = {
     else:
         print("Tiny Dataset がないため、確認をスキップしました。")
     ''',
-    "tiny_apply": '''
-    # 【教員提供コード】Tiny Dataset の全世帯を、2 人ともフルタイム（W1）・育児介護を半分ずつ分担した場合で確かめる
-    # 収支が赤字の世帯と、1 人の残り時間がマイナスになる（時間の制約に違反する）世帯を表示する
-    if tiny_households and run_if_implemented(annual_balance, tiny_work_by_id["W1"], tiny_work_by_id["W1"], tiny_households[0]) is not None \\
-            and run_if_implemented(free_hours, 40, 0, BASIC_HOURS) is not None:
-        full = tiny_work_by_id["W1"]
-        print("世帯  収支（万円/年）  1 人の残り時間（時間/週）  判定")
+    "practice": {
+        "explain": """
+        ### 練習：課題1〜4 を組み合わせて、Tiny Dataset の全世帯を確かめる（Level 1 の統合）
+
+        **【練習：Level 1】** 新しい関数は作りません。課題1〜4 の関数を **for 文の中で繰り返し使い**、
+        Tiny Dataset の 25 世帯について、次の 5 つを 1 つの表（辞書のリスト `tiny_results`）にまとめます。
+
+        | キー | 内容 | 使う関数 |
+        | --- | --- | --- |
+        | `income`・`expense`・`balance` | 年間所得・年間支出・年間収支（万円／年） | 課題1・2・3 |
+        | `free_a`・`free_b` | Adult A・B の残り時間（時間／週） | 課題4 |
+        | `time_violation` | どちらかの残り時間がマイナスなら `True`（時間の制約に違反） | 比較演算子 `<` と `or` |
+
+        条件：2 人ともフルタイム（`W1`）、育児・介護の必要時間を半分ずつ分担する。
+        `None` と書いてある 6 か所を書きかえてください（`for` 文の形はそのまま使います）。
+        """,
+        "code": '''
+        # 【練習：Level 1】F-1B 統合演習：課題1〜4 の関数を for 文で繰り返し使う（新しい関数は作らない）
+        option_a = tiny_work_by_id.get("W1")       # Adult A：フルタイム
+        option_b = tiny_work_by_id.get("W1")       # Adult B：フルタイム
+        tiny_results = []
         for h in tiny_households:
             need = h["required_childcare_hours"] + h["required_eldercare_hours"]
-            balance = annual_balance(full, full, h)
-            free = free_hours(full["weekly_work_hours"], need / 2, BASIC_HOURS)
+            care_a = need / 2
+            care_b = need - care_a
+            # TODO 1：課題1〜3 の関数で、年間所得・年間支出・年間収支を求める
+            income = None
+            expense = None
+            balance = None
+            # TODO 2：課題4 の関数で、2 人それぞれの残り時間を求める（労働時間は option_a・option_b の辞書、基本生活時間は BASIC_HOURS）
+            free_a = None
+            free_b = None
+            # TODO 3：どちらかの残り時間がマイナスなら True、そうでなければ False
+            time_violation = None
+            tiny_results.append({"scenario_id": h["scenario_id"], "income": income, "expense": expense, "balance": balance,
+                                 "free_a": free_a, "free_b": free_b, "time_violation": time_violation})
+        print(len(tiny_results), "世帯を処理しました。")
+        ''',
+        "hints": ("1 世帯ずつ、課題1〜4 の関数を呼び出して結果を変数に入れるだけです。新しい計算式は必要ありません。"
+                  "課題1〜4 が未実装のまま関数を呼ぶと `NotImplementedError` になります。先に課題1〜4 を `[OK]` にしてください。",
+                  "関数の呼び出し `関数名(引数1, 引数2)`、辞書の値 `option_a[\"weekly_work_hours\"]`、"
+                  "比較 `<`、`or`（どちらかが True なら True）。",
+                  "income ← 課題1 の関数（2 人の勤務形態）\nexpense ← 課題2 の関数（世帯 h）\n"
+                  "balance ← 課題3 の関数（2 人の勤務形態、世帯 h）\n"
+                  "free_a ← 課題4 の関数（A の労働時間、care_a、基本生活時間）、free_b も同様\n"
+                  "time_violation ← （free_a が 0 より小さい）または（free_b が 0 より小さい）"),
+        "check": '''
+        # 【動作確認】練習：Level 1 の統合（期待値は教員が別の方法で確かめた値）
+        if not tiny_results:
+            print("Tiny Dataset がないため、確認をスキップしました。")
+        elif any(value is None for r in tiny_results for value in r.values()):
+            print("[未実装] 練習の TODO（None の 6 か所）がまだ残っています。")
+        else:
+            R = {r["scenario_id"]: r for r in tiny_results}
+            pick = lambda sid, keys: [R[sid][k] for k in keys]
+            check("練習：S01 の所得・支出・収支", pick, ("S01", ["income", "expense", "balance"]), [800, 440, 360])
+            check("練習：S24 は 2 人ともフルタイムでも赤字", pick, ("S24", ["balance", "time_violation"]), [-200, False])
+            check("練習：S23 は時間の制約に違反", pick, ("S23", ["free_a", "free_b", "time_violation"]), [-44, -44, True])
+            check("練習：S25 は残り時間がちょうど 0（違反ではない）", pick, ("S25", ["free_a", "free_b", "time_violation"]), [0, 0, False])
+            check("練習：赤字の世帯", lambda rs: [r["scenario_id"] for r in rs if r["balance"] < 0], (tiny_results,), ["S24"])
+            check("練習：時間の制約に違反する世帯", lambda rs: [r["scenario_id"] for r in rs if r["time_violation"]], (tiny_results,), ["S23"])
+        ''',
+    },
+    "tiny_apply": '''
+    # 【教員提供コード】練習の結果 tiny_results を表で表示する（練習が終わると表示される）
+    if tiny_results and all(value is not None for r in tiny_results for value in r.values()):
+        print("世帯  所得  支出  収支（万円/年）  残り時間 A・B（時間/週）  判定")
+        for r in tiny_results:
             problems = []
-            if balance < 0:
+            if r["balance"] < 0:
                 problems.append("赤字")
-            if free < 0:
+            if r["time_violation"]:
                 problems.append("時間が足りない")
-            print(f'{h["scenario_id"]}  {balance:>8}  {free:>8.1f}  {"、".join(problems) or "OK"}')
+            print(f'{r["scenario_id"]}  {r["income"]:>4}  {r["expense"]:>4}  {r["balance"]:>6}  '
+                  f'{r["free_a"]:>6.1f}  {r["free_b"]:>6.1f}  {"、".join(problems) or "OK"}')
+    else:
+        print("練習（tiny_results）が終わると、全世帯の判定の表を表示します。")
     ''',
     "viz": '''
     # 【教員提供コード】Mini Dataset：2 人とも同じ勤務形態の場合の世帯所得と支出（課題1・2 を実装すると表示される）
@@ -1644,26 +1790,41 @@ F1B = {
             `balance`（年間収支）、`free_a`・`free_b`（それぞれの残り時間）、`free_total`（2 人の残り時間の合計）
 
             課題3 の `annual_balance()` と課題4 の `free_hours()` を使います。
+
+            **4 つの段階に分けて考えます**（1 つの組合せ (a, b) と 1 つの分担 (care_a, care_b) について）
+
+            | 段階 | 確かめること | 満たさないとき |
+            | --- | --- | --- |
+            | 1. 所得の制約 | 年間収支 `annual_balance(a, b, household)` が 0 以上か | この組合せは、どの分担でも実行できない → 次の組合せへ |
+            | 2. 各人の時間の制約 | `free_hours()` で求めた**2 人それぞれの**残り時間が `min_free_hours` 以上か | 次の分担へ |
+            | 3. 育児・介護の時間の充足 | `care_a + care_b` が、世帯で必要な時間（育児 + 介護）以上か | 次の分担へ |
+            | 4. 候補の保存 | 1〜3 をすべて満たしたら、計画の辞書を作ってリストに追加する | ― |
+
+            段階 2 と 3 はどちらを先に確かめても、結果（計画のリスト）は同じです。
+            段階 1 は分担によらないので、分担の for 文の**外側**で確かめると、無駄な計算を減らせます。
             """,
             "stub": f'''
             # 【学生実装課題：Level 2】課題6
             def find_feasible_plans(work_pairs, household, care_splits, basic_hours, min_free_hours):
                 """収支・必要な育児介護時間・1 人ごとの残り時間の条件を満たす計画のリストを返す。"""
-                # TODO: 世帯で必要な育児・介護の時間（2 種類の合計）を求める。
-                # TODO: 各組合せ (a, b) について収支を計算し、赤字なら次の組合せへ。
-                # TODO: 各分担 (care_a, care_b) について、合計が必要時間以上か、2 人の残り時間が下限以上かを確かめる。
-                # TODO: すべて満たせば、計画の辞書をリストに追加する。
+                # TODO: 準備：世帯で必要な育児・介護の時間（2 種類の合計）と、結果を入れる空のリストを用意する。
+                # TODO: 段階1（所得の制約）：各組合せ (a, b) の年間収支を求め、赤字なら次の組合せへ。
+                # TODO: 段階2（各人の時間の制約）：各分担 (care_a, care_b) について、2 人それぞれの残り時間が下限以上か。
+                # TODO: 段階3（育児・介護の時間の充足）：care_a + care_b が必要な時間以上か。
+                # TODO: 段階4（候補の保存）：すべて満たせば、計画の辞書（8 つのキー）をリストに追加する。
                 {STUB}
             ''',
-            "hints": ("組合せ（k² 通り）× 分担（m 通り）をすべて調べ、条件に合わないものを除きます。"
-                      "1 人ごとの時間を別々に確かめることが大切です。",
+            "hints": ("組合せ（k² 通り）× 分担（m 通り）をすべて調べ、段階1〜3 の条件に合わないものを除きます（段階4 で保存）。"
+                      "1 人ごとの時間を別々に確かめることが大切です（2 人の合計では判定しない）。",
                       "二重の for 文、`continue`（次のくり返しへ進む）、`and`、辞書の作成と `append()`。",
-                      "required ← 必要な育児時間 + 必要な介護時間\nplans ← 空のリスト\nfor (a, b) in work_pairs:\n"
-                      "    balance ← annual_balance(a, b, household)\n    もし balance < 0 なら continue\n"
-                      "    for (care_a, care_b) in care_splits:\n        もし care_a + care_b < required なら continue\n"
-                      "        free_a ← free_hours(a の労働時間, care_a, basic_hours)、free_b も同様\n"
-                      "        もし free_a >= min_free_hours かつ free_b >= min_free_hours なら\n"
-                      "            計画の辞書を plans に追加\nplans を返す"),
+                      "準備：required ← 必要な育児時間 + 必要な介護時間、plans ← 空のリスト\n"
+                      "組合せ (a, b) ごとに:\n"
+                      "    段階1：収支を求める。赤字なら次の組合せへ\n"
+                      "    分担 (care_a, care_b) ごとに:\n"
+                      "        段階2：2 人の残り時間を求める。どちらかが下限より少なければ次の分担へ\n"
+                      "        段階3：分担の合計が required より少なければ次の分担へ\n"
+                      "        段階4：計画の辞書を作り、plans に追加\n"
+                      "plans を返す"),
             "check": '''
             # 【動作確認】
             plans_35 = [
@@ -1773,6 +1934,10 @@ F1B = {
     - 平均値は、特定の家族の生活を表すものではありません。「教育」などの費目は、子どもがいない世帯も含めた平均です。
     - 生活時間（家事・育児の時間）の公開統計（総務省「社会生活基本調査」）は、今回の教材には含めていません。
       使う場合は、調査年・対象（個人か世帯か）・単位（1 日か 1 週間か）をそろえ、**仮想の世帯のパラメータ**として使います。
+    - **発展課題（社会生活基本調査の利用）**：公式の取得先は政府統計の総合窓口 e-Stat（https://www.e-stat.go.jp/ 、政府統計コード 00200533、
+      最新は令和3年調査）。行動の種類別（睡眠・身の回りの用事・食事、家事、育児、介護・看護など）の**1 日あたりの平均時間（分）**が公開されています。
+      週あたりの時間（× 7 ÷ 60）に直して、`BASIC_HOURS`（教材の仮定値 77 時間／週）や必要な育児時間の仮定と比べます。
+      平均には、その行動をしない人（例：子どもがいない人）も含まれることに注意します。
     - 出典：総務省統計局「家計調査（家計収支編）」2025 年（政府統計の総合窓口(e-Stat)、https://www.e-stat.go.jp/）を加工して作成。
     """,
     "small_code": small_loader("expense_small", "f1b/household_expenses_small.csv", ["survey_year"], ["value"],
@@ -1786,6 +1951,62 @@ F1B = {
     3. **育児休業と就業の継続**：休業する年数と復帰後の勤務形態を変え、複数年の収支を比べる。
     4. **外部の保育・介護サービス**：サービスを使うと費用が増え、必要な家族の時間が減るモデル。
     5. **所得と自由時間の両立**：2 つの指標の重み付きの評価や、どちらの指標でも他より悪くない計画（パレート最適）を探す。
+    """,
+    "bridge": {
+        "explain": """
+        Small Dataset（家計調査）の支出を、課題2・3 の世帯の支出として使ってみます。**データの形と単位が違う**ので、変換が必要です。
+
+        | | 課題2・3 の入力 `household` | Small Dataset `expense_small` |
+        | --- | --- | --- |
+        | 金額の単位 | 年額（`living_cost` など、万円／年） | **月額**（`value`。`unit` が「万円／月」） |
+        | 形 | 1 世帯 = 1 つの辞書（横長） | 1 行 = 年齢階級 × 費目（縦長） |
+        | 費目 | 生活費・育児費・介護費の 3 つ | 消費支出（`consumption_total`）と 10 大費目。**教育（`education`）は消費支出に含まれる** |
+        | 世帯 | 仮想の 1 世帯 | 世帯主の年齢階級ごとの二人以上の世帯の平均（世帯人員も違う） |
+
+        消費支出をそのまま `living_cost` にし、さらに `childcare_cost` も足すと、教育などの費用を**二重に数える**おそれがあります。
+        """,
+        "teacher_code": '''
+        # 【教員提供コード】F-1B：Small Dataset の確認（年額への変換は行わない）
+        if expense_small:
+            groups = []
+            for r in expense_small:
+                if r["age_group"] not in groups:
+                    groups.append(r["age_group"])
+            print("世帯主の年齢階級:", groups)
+            AGE_GROUP = groups[1]             # 確認したい年齢階級に変えてよい
+            print(f"世帯主 {AGE_GROUP} の項目（1 か月あたり）")
+            for r in expense_small:
+                if r["age_group"] == AGE_GROUP:
+                    print(f'{r["category_code"]:<24} {r["category"]:<10} {r["value"]:>8} {r["unit"]}')
+        else:
+            print("Small Dataset がありません。この演習は省略してかまいません（Level 1・2 には影響しません）。")
+        ''',
+        "tasks": """
+        **手順**（すべてを実装する必要はありません。独自機能にしてもかまいません）
+
+        1. **年齢階級別の支出の確認**：上の表で、消費支出と費目、単位（万円／月）、世帯人員を確かめる。
+        2. **月額と年額の変換**：選んだ年齢階級の消費支出と教育費を、年額（万円／年）に変換する。
+        3. **仮想世帯への応用**：`household` と同じキーを持つ仮想の世帯の辞書を作る。二重計上を避ける方法（例：消費支出から教育を除いた額を `living_cost` にする）を決めて書く。
+        4. **年間収支**：課題3 の `annual_balance()` と勤務形態の組合せで、年齢階級ごとの年間収支を比べる。
+
+        > 家計調査の支出は**平均**で、特定の家族の生活を表しません。勤務形態の年収（仮定値・額面）と、家計調査の収入（手取りに近い項目を含む）は定義が違います。
+        """,
+        "scaffold": '''
+        # 【発展課題：Level 3】F-1B 橋渡し演習（チームで書く。完成コードは提供しません）
+        # TODO 1：使う年齢階級を選び、消費支出と教育の月額を取り出す
+        # TODO 2：月額を年額（万円／年）に変換する
+        # TODO 3：二重計上を避けて、household と同じキーの仮想世帯の辞書を作る
+        # TODO 4：annual_balance() で勤務形態の組合せごとの年間収支を求め、比べる
+        ''',
+    },
+    "limits": """
+    | 観点 | このモデルでの扱い | 注意すること |
+    | --- | --- | --- |
+    | 所得と支出の定義 | 年収は勤務形態ごとの仮定値。支出は生活費・育児費・介護費の 3 つ | 統計の「収入」「消費支出」と定義が同じとは限らない |
+    | 税引前所得と可処分所得 | 年間収支 = 額面の所得 − 支出（税・社会保険料を引かない） | 実際は可処分所得で考える。黒字が大きく見える |
+    | 時間配分の個人差 | 基本生活時間 77 時間／週は全員同じ仮定値（`BASIC_HOURS`） | 睡眠・家事・通勤の時間は人によって大きく違う |
+    | 育児・介護の質 | 必要な時間数を満たすかだけで判定 | 時間が足りても、質・負担感・体調は表せない |
+    | 外部サービス・制度 | 含めない（保育所・介護サービス・育児休業の給付など） | 実際の選択肢はもっと多い |
     """,
     "discussion": """
     - 所得が最大の計画と、自由時間を重視した計画は同じでしたか。違う場合、何が違いを生みましたか。
@@ -2220,6 +2441,20 @@ F1C = {
                 print(f"予算 {budget:>5}：線形探索 {len(linear):>2} 件、二分探索 {len(binary):>2} 件　{mark}")
         '''),
         ("""
+        ### 二分探索の前提：ソートしていないデータに使うと
+
+        二分探索は「データが小さい順に並んでいる」ことを前提にした方法です。前提を満たさない入力に使っても**エラーにはならず**、
+        間違った件数を返すことがあります。課題6・7 の関数に渡す前に、必ず並べ替えます。
+        """, '''
+        # 【教員提供コード】ソートしていない価格のリストに二分探索（課題6）を使うと、件数が合わない
+        if tiny_housing and run_if_implemented(count_affordable, [1, 2, 3], 2) is not None:
+            unsorted_prices = [h["purchase_price"] for h in tiny_housing]    # CSV の順のまま（ソートしていない）
+            linear = sum(1 for p in unsorted_prices if p <= 3000)               # 比較用：線形探索で数える
+            print("線形探索で数えた件数（予算 3000）　　　:", linear)
+            print("ソートしていないリストに二分探索　　　:", count_affordable(unsorted_prices, 3000), "← 前提を満たさない")
+            print("ソートしてから二分探索　　　　　　　　:", count_affordable(sorted(unsorted_prices), 3000))
+        '''),
+        ("""
         ### 1 回だけ探す場合と、何回も探す場合（実行時間の目安）
 
         Benchmark Dataset（人工の価格 N 件）を**メモリ上で作り**、Q 個の予算で探す時間を比べます。
@@ -2273,6 +2508,59 @@ F1C = {
     3. **住宅ローンの返済シミュレーション**：元利均等返済（毎月の返済額が同じ）の式の意味を説明してから使い、残高を 1 か月ずつ更新する。
     4. **複数条件の探索**：予算・通勤時間・床面積を組み合わせた探索、条件の重み付けによる順位付け。
     5. **住宅を取得する時期の比較**：何年後に購入するか（その間は賃貸）を全探索する。
+    """,
+    "bridge": {
+        "explain": """
+        実際の取引価格のデータで、課題5〜7 の探索を試す方法です。**データは教員が用意した場合だけ**あります。ない場合は、Tiny Dataset で考え方だけを確かめます。
+
+        | 項目 | 内容 |
+        | --- | --- |
+        | 公式の取得先 | 国土交通省「不動産情報ライブラリ」の不動産取引価格情報（https://www.reinfolib.mlit.go.jp/realEstatePrices/） |
+        | 手動での取得 | Web 画面で地域（市区町村）・取引時期・種類（中古マンション等）を選び、CSV をダウンロードする。利用条件（出典の書き方）を確認する |
+        | 授業で配布される形 | `data/f1c/housing_prices_small.csv`：`record_id`、`price`（**万円**。元の CSV の「取引価格（総額）」は**円**）、`floor_area`（㎡）、`period`（取引時期）、`municipality` など |
+
+        | | 課題5〜7 の入力（住宅の辞書） | 取引価格データ |
+        | --- | --- | --- |
+        | ID と価格のキー | `housing_id`、`purchase_price`（万円） | `record_id`、`price`（万円） |
+        | 通勤時間・家賃 | `commute_minutes`、`monthly_rent`（仮定値） | **ない**（作り足さない） |
+        | 価格の意味 | 仮想の購入価格 | 過去に実際に成約した価格 |
+
+        変換の考え方：各行から `{"housing_id": ..., "purchase_price": ...}` の**新しい辞書**を作れば、課題5〜7 の関数をそのまま使えます。
+        課題4 `find_candidates()` は通勤時間が必要なので、実データには使えません。
+        """,
+        "teacher_code": '''
+        # 【教員提供コード】F-1C：取引価格データの確認（探索は行わない）
+        if prices_small:
+            print("列名:", list(prices_small[0].keys()))
+            print("件数:", len(prices_small))
+        else:
+            print("実際の取引価格データ（housing_prices_small.csv）はありません。上の表で手順を確かめ、Tiny Dataset で考え方を試してください。")
+        ''',
+        "tasks": """
+        **手順**（データがある場合。すべてを実装する必要はありません）
+
+        1. **データの変換**：元のリストを変えずに、課題5〜7 の入力の形（`housing_id`・`purchase_price`）の新しいリストを作る。
+        2. **既存の探索関数への応用**：課題5 で価格順に並べ、課題6・7 で予算以下の件数と ID を求める。線形探索（for 文で数える）の結果と一致することを確かめる。
+        3. **繰り返し探索**：予算を何回も変えて探す時間を、第8章 8.6 の比較4 と同じ方法で測る。
+        4. **条件の追加**：実在する列（`floor_area`、`period`、`municipality`）だけで条件を加える。**通勤時間や家賃を実測値のように作らない。**
+
+        > 出典の例：「出典：国土交通省　不動産情報ライブラリ（https://www.reinfolib.mlit.go.jp/）を加工して作成」
+        """,
+        "scaffold": '''
+        # 【発展課題：Level 3】F-1C 橋渡し演習（チームで書く。完成コードは提供しません）
+        # TODO 1：prices_small から、housing_id と purchase_price を持つ新しい辞書のリストを作る
+        # TODO 2：課題5〜7 で並べ替え・二分探索を行い、線形探索の結果と比べる
+        # TODO 3：実在する列だけで条件を追加する（通勤時間・家賃は作らない）
+        ''',
+    },
+    "limits": """
+    | 観点 | このモデルでの扱い | 注意すること |
+    | --- | --- | --- |
+    | 取引価格と販売価格 | 実データは過去に成約した価格 | 今売りに出ている価格（販売価格）や、将来の価格とは違う |
+    | 累積支出と住宅の資産価値 | 購入の費用を支出として足す。住宅の価値（売れる価格）は含めない | 購入の比較が、実際より不利にも有利にも見える |
+    | 住宅ローン・金利 | 省略（購入価格を一度に払う） | 利息の分だけ、実際の支払総額は大きくなる |
+    | 税・維持費 | 取得時の税・手数料・固定資産税は省略。維持費は毎年一定の仮定 | 実際の費用は年によって変わる |
+    | 通勤時間・家賃 | Tiny の仮定値（実データにはない） | 実データに作り足さない |
     """,
     "discussion": """
     - 線形探索と二分探索は、どのような場面でどちらが有利でしたか。ソートにかかる時間も含めて説明してください。
@@ -2755,6 +3043,59 @@ F1D = {
     4. **事業・知的財産の承継**：毎年の事業収入を生む資産を、ある年に子に引き継ぐ。
     5. **子の世代から親の世代への支援**：親が高齢になった後、子から親への支援（介護費など）を加える。
     """,
+    "bridge": {
+        "explain": """
+        Small Dataset（全国家計構造調査・子供の学習費調査）を、仮想の親子のパラメータとして使ってみます。**データの形と意味が課題の入力と違います。**
+
+        | | 課題の入力（`family` の辞書・移転額） | Small Dataset |
+        | --- | --- | --- |
+        | 資産 | `initial_assets`：1 人の資産（万円） | 世帯主の年齢階級別の **1 世帯当たりの平均**：金融資産・金融負債・住宅・宅地資産が**別の列**（万円） |
+        | 親子の関係 | 同じ家族の親と子 | 年齢階級の違う**別々の世帯**の平均。親子の観測データではない |
+        | 教育費 | 移転額 `annual_transfer` は毎年一定 | 学校種別・公立私立別の**子供 1 人・1 年あたり**の学習費（万円／年） |
+        """,
+        "teacher_code": '''
+        # 【教員提供コード】F-1D：Small Dataset の確認（純資産や教育費の合計は計算しない）
+        if assets_small:
+            print("二人以上の世帯：世帯主の年齢階級 | 金融資産 | 金融負債 | 住宅・宅地資産（万円）")
+            for r in assets_small:
+                if r["household_type_code"] == "two_or_more":
+                    print(f'{r["head_age_group"]:<8} | {r["financial_assets"]} | {r["financial_liabilities"]} | {r["housing_land_assets"]}')
+        if learning_small:
+            print()
+            print("学校種別 | 公立・私立 | 学習費総額（万円／年）")
+            for r in learning_small:
+                print(f'{r["school_type"]} | {r["ownership"]} | {r["total_cost"]}')
+        if not assets_small and not learning_small:
+            print("Small Dataset がありません。この演習は省略してかまいません（Level 1・2 には影響しません）。")
+        ''',
+        "tasks": """
+        **手順**（すべてを実装する必要はありません。独自機能にしてもかまいません）
+
+        1. **資産・負債の確認**：上の表で、年齢階級ごとの資産と負債を確かめる。
+        2. **純資産の計算**：年齢階級ごとに純資産を計算する（金融資産 − 金融負債。住宅・宅地資産を含めるかどうかを決めて書く）。
+        3. **学校種別の教育費の確認**：小学校〜高等学校（公立・私立）の 1 年あたりの学習費から、子 1 人の年ごとの教育費のリストを作る（在学年数は自分で決める）。
+        4. **仮想的な教育資金移転への応用**：親の年齢階級の純資産を親の `initial_assets` の目安にし、教育費のリストに合わせて**年ごとに移転額が変わる**移転を試す。
+           課題4 は毎年同じ額なので、課題4 を参考に新しい関数を作る。親の最低生活資金を守れるかを確かめる。
+
+        > 平均値は、資産の多い少数の世帯の影響で大きくなりがちです。また、2 つの年齢階級の値は**別々の世帯の平均**です。同じ家族のデータとして扱わず、「仮想の親子」と明記します。
+        """,
+        "scaffold": '''
+        # 【発展課題：Level 3】F-1D 橋渡し演習（チームで書く。完成コードは提供しません）
+        # TODO 1：年齢階級ごとの純資産を求める（住宅・宅地資産を含めるかを決める）
+        # TODO 2：子 1 人の年ごとの教育費のリストを作る（学校種別・公立私立・在学年数を決める）
+        # TODO 3：年ごとに移転額が変わる移転のシミュレーションを作る（課題4 を参考に）
+        # TODO 4：親の最低生活資金を守れるか、子の資産不足が起きるかを確かめる
+        ''',
+    },
+    "limits": """
+    | 観点 | このモデルでの扱い | 注意すること |
+    | --- | --- | --- |
+    | 集計統計と移転の履歴 | 統計の平均を仮想の親子に当てはめる | 実際の家族の移転の履歴ではない。別々の世帯の平均を同じ家族として扱わない |
+    | 贈与税・相続税 | 省略 | 実際の移転では税の制度が関係する |
+    | 介護費用 | 省略（親の支出は毎年一定） | 高齢期の親の支出は増えることがある |
+    | 親世代の生活維持 | 親の最低生活資金（下限）を守れるかで判定 | 下限の値は仮定。誰がどう決めるかを考察する |
+    | 資産不足の扱い | マイナスのまま記録し、0 に置き換えない | 不足の大きさが分かるようにするため。借入れの利息は省略 |
+    """,
     "discussion": """
     - 移転額を変えると、親と子のどちらの資産不足が起きやすくなりましたか。
     - 親の最低生活資金の条件を満たしながら、子の資産不足を防げるシナリオはありましたか。
@@ -2818,19 +3159,541 @@ md("""
 - 評価のしかた（評価指標）やモデルを変えた結果の違いを、「アルゴリズムが速くなった」と混同しないでください。
 - 実行時間はコンピュータによって変わります。測った環境を記録します。
 
-## 8.3 テーマごとの性能評価
+""")
+md("""
+## 8.3 性能評価の共通ルール
 
-| テーマ | 比べるもの | 使う関数 |
+8.4〜8.7 では、担当テーマの関数を使って、**データの規模と実行時間の関係**を調べます。担当テーマの節だけを実行すれば十分です
+（他のテーマの節は「[スキップ]」と表示されます）。
+
+| 明示すること | この章での決め方 |
+| --- | --- |
+| データ規模 | 件数 N、候補数 k、シナリオ数 M × D、年数 T などを表の列に書く |
+| アルゴリズムと理論的な計算量 | 各節の最初の表に書く（理論）。実測時間とは分けて考える |
+| 実測時間 | `time.perf_counter()` で測り、**同じ条件で 3 回測った中央値**を使う（第3章の `measure_time()` と同じ方法） |
+| 測らないもの | データの生成・CSV の読み込み・グラフの描画は、探索の時間に**含めない** |
+| 別に測るもの | ソートなどの前処理の時間が、方法の選び方に影響するとき（8.6 の比較3・4） |
+| 結果の一致 | 速さを比べる 2 つの方法は、**先に結果が同じことを確かめる**（表の「確認」の列） |
+| 再現性 | Benchmark Dataset は `random.Random(シード)` で**メモリ上だけに**作る（ファイルに保存しない） |
+
+**2 種類の比較を区別します**
+
+- **アルゴリズムの速度比較**：同じ入力・同じ答えになる 2 つの方法の時間を比べる（例：線形探索と二分探索）。
+- **条件・目的関数による結果の比較**：評価のしかたを変えると、選ばれる候補が変わる（例：収支が最大の計画と、自由時間が最大の計画）。
+  これは「速くなった」のではなく、**問いが変わった**ことによる違いです。
+
+実測時間は、コンピュータ・Python のバージョン・ほかに動いているプログラムによって変わります。
+理論的な計算量（O 記法）は「規模を大きくしたときの増え方」を表し、何秒かかるかを表すものではありません。
+""")
+md(TEACHER)
+code('''
+# 【教員提供コード】性能評価の共通関数（第8章で使う）
+BENCH_REPEAT = 3       # 同じ条件を何回測るか（中央値を使う）
+BENCH_LIMIT = 1.0      # 1 回の実行がこの秒数を超えたら、それより大きい規模は測らない
+
+
+def bench_ready(*names):
+    """担当テーマの関数が定義済みなら True。未定義なら理由を表示して False"""
+    missing = [name for name in names if name not in globals()]
+    if missing:
+        print("[スキップ] 担当テーマの章を先に実行してください。未定義の関数:", ", ".join(missing))
+        return False
+    return True
+
+
+def timed(func, args, repeat=BENCH_REPEAT):
+    """func(*args) を実行し、(結果, 実行時間の中央値[秒]) を返す。
+    1 回目が BENCH_LIMIT 秒を超えたときは、繰り返さずにその時間を返す。"""
+    start = time.perf_counter()
+    result = func(*args)
+    times = [time.perf_counter() - start]
+    if times[0] <= BENCH_LIMIT:
+        for _ in range(repeat - 1):
+            start = time.perf_counter()
+            func(*args)
+            times.append(time.perf_counter() - start)
+    return result, statistics.median(times)
+
+
+def too_slow(previous_seconds, growth):
+    """前の規模の時間 × 増え方の倍率 で次の時間を予想し、BENCH_LIMIT の 5 倍を超えそうなら True"""
+    return previous_seconds is not None and previous_seconds * growth > 5 * BENCH_LIMIT
+
+
+def print_table(headers, rows):
+    """結果を表で表示する（matplotlib がなくても、この表で評価できる）"""
+    print(" | ".join(str(h) for h in headers))
+    for row in rows:
+        cells = []
+        for value in row:
+            if isinstance(value, float):
+                cells.append(f"{value:.6f}")
+            elif isinstance(value, int) and not isinstance(value, bool):
+                cells.append(f"{value:,}")
+            else:
+                cells.append(str(value))
+        print(" | ".join(cells))
+
+
+print("測定条件：Python", platform.python_version(), "/", platform.system(), platform.machine(),
+      f"/ time.perf_counter() で {BENCH_REPEAT} 回測った中央値 / 1 回が {BENCH_LIMIT} 秒を超えたら打ち切り")
+''')
+
+# ---------------------------------------------------------------- F-1A
+md("""
+## 8.4 F-1A：キャリア候補の数と処理時間
+
+| 処理 | 使う関数 | 理論的な計算量 |
 | --- | --- | --- |
-| F-1A | 候補の数 N と、全候補の生涯所得の計算時間（O(N × T)） | 課題4 |
-| F-1B | 勤務形態の種類 k と、組合せ k² × 分担 m の探索時間 | 課題5・6 |
-| F-1C | 線形探索と二分探索（1 回だけ探す場合・何回も探す場合）、ソートの時間を含めた比較 | 課題4〜7 |
-| F-1D | シナリオ数 S・年数 T と、シミュレーションの時間（O(S × T)） | 課題4・7 |
+| 1 つの候補の年齢別所得の累積 | 課題3 `lifetime_income` | O(T)（T は就業年数） |
+| N 個の候補の所得計算 | 課題4 `summarize_careers` | O(N × T) |
+| 計算済みの所得に対する線形探索 | 課題5 `filter_careers` | O(N) |
+| 計算済みの所得に対するソート | 課題6 `rank_careers` | `sorted()` なら O(N log N)、挿入ソートなら最悪 O(N²) |
 
-Benchmark Dataset は、ファイルに保存せず、`random.Random(シード)` でプログラムの中で作ります（例：6.8 の `make_prices()`）。
-グラフは `plot_lines()` で「件数と実行時間」を描きます。
+- 「計算済みの所得」を使うことが大切です。ソートの比較のたびに所得を計算し直すと、O(N log N × T) になります（8.4.3）。
+- 課題6 を挿入ソートで書いたか `sorted()` で書いたかで、N が大きいときの時間が大きく変わります。**自分の実装に合わせて**計算量を説明してください。
+""")
+md("### 8.4.1 候補の数 N を変える（就業年数 T = 43 で固定）\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1A：N を変えて、所得計算・線形探索・ソートの時間を測る（課題4〜6 を使う）
+def make_careers(n, start_age=22, seed=2026):
+    """Benchmark Dataset：人工のキャリア候補を n 件、メモリ上で作る（ファイルに保存しない）"""
+    rng = random.Random(seed)
+    careers = []
+    for i in range(n):
+        careers.append({"career_id": f"B{i:05d}", "career_name": "人工データ", "start_age": start_age,
+                        "retirement_age": 65, "initial_salary": rng.randrange(250, 451, 10),
+                        "annual_growth": rng.choice([0.0, 0.01, 0.02, 0.03]),
+                        "education_cost": rng.choice([0, 200, 400, 800])})
+    return careers
 
-## 8.4 チーム開発の進め方
+
+bench_a_sizes = [10, 100, 1_000, 10_000]
+bench_a = []
+if bench_ready("summarize_careers", "filter_careers", "rank_careers"):
+    try:
+        previous = None
+        for n in bench_a_sizes:
+            careers = make_careers(n)                                    # 生成は測らない
+            summaries, t_sum = timed(summarize_careers, (careers, 65))
+            threshold = statistics.median([s["net_income"] for s in summaries])
+            found, t_filter = timed(filter_careers, (summaries, threshold))
+            if bench_a and too_slow(previous, (n / bench_a[-1][0]) ** 2):  # O(N²) なら N が 10 倍で 100 倍
+                print(f"N = {n:,}：課題6 のソートは時間がかかりそうなので、ここで打ち切ります（O(N²) の目安）。")
+                break
+            ranked, t_rank = timed(rank_careers, (summaries, "net_income"))
+            previous = t_rank
+            same = [s["net_income"] for s in ranked] == sorted([s["net_income"] for s in summaries], reverse=True)
+            bench_a.append((n, len(found), t_sum, t_filter, t_rank, "一致" if same else "不一致"))
+    except NotImplementedError:
+        print("[未実装] 課題4〜6 を実装すると測定できます。")
+print_table(["N", "条件を満たす件数", "所得計算 O(NT) 秒", "線形探索 O(N) 秒", "ソート 秒", "順位の確認（sorted と比較）"], bench_a)
+if bench_a:
+    plot_lines([r[0] for r in bench_a],
+               {jp("所得計算（課題4）", "summarize"): [r[2] for r in bench_a],
+                jp("線形探索（課題5）", "filter"): [r[3] for r in bench_a],
+                jp("ソート（課題6）", "rank"): [r[4] for r in bench_a]},
+               jp("F-1A：候補の数と実行時間（両軸とも対数）", "F-1A: number of careers vs time (log-log)"),
+               jp("候補の数 N", "N"), jp("秒", "seconds"), log=True)
+''')
+md("### 8.4.2 就業年数 T を変える（候補の数 N = 1,000 で固定）\n\n"
+   "開始年齢を変えると就業年数 T が変わります。O(N × T) なら、時間は T にほぼ比例するはずです。\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1A：T を変えて所得計算の時間を測る（N は固定）
+bench_a_t = []
+if bench_ready("summarize_careers"):
+    try:
+        for start_age in [55, 45, 35, 22]:
+            careers = make_careers(1_000, start_age=start_age)
+            _, t_sum = timed(summarize_careers, (careers, 65))
+            T = 65 - start_age
+            bench_a_t.append((T, 1_000 * T, t_sum, t_sum / T * 1e3))
+    except NotImplementedError:
+        print("[未実装] 課題4 を実装すると測定できます。")
+print_table(["T（年）", "N × T", "所得計算 秒", "1 年あたり ミリ秒"], bench_a_t)
+''')
+md("""
+### 8.4.3 ソートの比較のたびに所得を計算し直すと
+
+次のセルは、同じ順位を 2 つの方法で求めます。結果は同じですが、計算量が違います。
+
+| 方法 | 計算量 |
+| --- | --- |
+| 先に全候補の所得を 1 回ずつ計算し（課題4）、計算済みの値で並べる | O(N × T + N log N) |
+| 比較のたびに 2 つの候補の所得を計算し直す | O(N log N × T) |
+""" + "\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1A：所得を「先に 1 回計算」と「比較のたびに計算」の比較（課題3・4 を使う）
+import functools
+
+
+def rank_precomputed(careers):
+    summaries = summarize_careers(careers, 65)                          # 所得の計算は N 回
+    return [s["career_id"] for s in sorted(summaries, key=lambda s: s["lifetime_income"], reverse=True)]
+
+
+def rank_recomputed(careers):
+    def compare(a, b):                                                  # 比較のたびに所得を 2 回計算する
+        return lifetime_income(b, 65) - lifetime_income(a, 65)
+    return [c["career_id"] for c in sorted(careers, key=functools.cmp_to_key(compare))]
+
+
+bench_a_sort = []
+if bench_ready("lifetime_income", "summarize_careers"):
+    try:
+        for n in [100, 1_000]:
+            careers = make_careers(n)
+            r1, t1 = timed(rank_precomputed, (careers,))
+            r2, t2 = timed(rank_recomputed, (careers,))
+            bench_a_sort.append((n, t1, t2, "一致" if r1 == r2 else "不一致"))
+    except NotImplementedError:
+        print("[未実装] 課題3・4 を実装すると測定できます。")
+print_table(["N", "先に計算 秒", "比較のたびに計算 秒", "順位の確認"], bench_a_sort)
+''')
+md(f"{THINK}" + """
+
+1. N を 10 倍にすると、所得計算・線形探索・ソートの時間はそれぞれ約何倍になりましたか。理論的な計算量と比べてください。
+2. 自分の課題6 の実装の計算量はいくつですか。`sorted()` を使った場合と比べてください。
+3. 8.4.3 で、2 つの方法の時間の差は N が大きくなるとどうなりますか。
+""")
+
+# ---------------------------------------------------------------- F-1B
+md("""
+## 8.5 F-1B：勤務形態の候補数 k と全探索
+
+| 処理 | 使う関数 | 理論的な計算量 |
+| --- | --- | --- |
+| 2 人の勤務形態の組合せを作る | 課題5 `generate_work_pairs` | O(k²)（1 人 k 通り × もう 1 人 k 通り） |
+| 組合せ × 育児・介護の分担を調べる | 課題6 `find_feasible_plans` | O(k² × m)（m は分担の候補数） |
+| 実行可能な計画を並べる | 課題7 `rank_plans` | O(P log P)（P は実行可能な計画の数） |
+
+分担の候補を増やすと（m を 2 倍にすると）、調べる候補の数も 2 倍になります。2 人に k 通りずつの選択肢があると、
+組合せは k² 通りです。もう 1 つ判断（例：住む場所 r 通り）を加えると k² × m × r 通りになり、**掛け算で増えます**。
+""")
+md("### 8.5.1 候補数 k を変える\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1B：k を変えて、全候補数・実行可能な計画の数・時間を測る（課題5・6 を使う）
+def make_work_options(k, seed=2027):
+    """Benchmark Dataset：人工の勤務形態を k 件、メモリ上で作る（年収は労働時間に比例する仮定）"""
+    rng = random.Random(seed)
+    options = []
+    for i in range(k):
+        hours = rng.choice([0, 20, 28, 35, 40, 45, 50, 55])
+        options.append({"option_id": f"W{i:03d}", "work_style": "人工データ",
+                        "annual_income": hours * rng.randrange(7, 13), "weekly_work_hours": hours})
+    return options
+
+
+bench_household = {"scenario_id": "BENCH", "living_cost": 400, "childcare_cost": 60, "eldercare_cost": 0,
+                   "required_childcare_hours": 30, "required_eldercare_hours": 0}
+bench_splits = [(30, 0), (20, 10), (15, 15), (10, 20), (0, 30), (10, 10)]     # 分担の候補 m = 6
+bench_basic_hours = 77         # 基本生活時間（第5章と同じ仮定値）
+bench_min_free = 20            # 1 人の残り時間の下限（時間／週）
+
+
+def search_plans(options):
+    """組合せの生成（課題5）と、制約による絞り込み（課題6）"""
+    pairs = generate_work_pairs(options)
+    return find_feasible_plans(pairs, bench_household, bench_splits, bench_basic_hours, bench_min_free)
+
+
+bench_b = []
+if bench_ready("generate_work_pairs", "find_feasible_plans"):
+    try:
+        for k in [3, 10, 20, 50, 100]:
+            options = make_work_options(k)
+            plans, seconds = timed(search_plans, (options,))
+            total = k * k * len(bench_splits)
+            bench_b.append((k, k * k, total, len(plans), total - len(plans), seconds))
+    except NotImplementedError:
+        print("[未実装] 課題5・6 を実装すると測定できます。")
+print_table(["k", "組合せ k²", "全候補 k²×m", "実行可能", "実行できない", "時間 秒"], bench_b)
+if bench_b:
+    ks = [r[0] for r in bench_b]
+    plot_lines(ks, {jp("全探索の時間", "search time"): [r[5] for r in bench_b]},
+               jp("F-1B：候補数 k と実行時間（両軸とも対数）", "F-1B: k vs time (log-log)"),
+               jp("1 人の勤務形態の候補数 k", "k"), jp("秒", "seconds"), log=True)
+    plot_lines(ks, {jp("全候補 k²×m", "all candidates"): [r[2] for r in bench_b],
+                    jp("実行可能", "feasible"): [r[3] for r in bench_b]},
+               jp("F-1B：全候補と実行可能な計画の数（両軸とも対数）", "F-1B: candidates (log-log)"),
+               jp("1 人の勤務形態の候補数 k", "k"), jp("件数", "count"), log=True)
+''')
+md("""
+### 8.5.2 目的関数を変えると、選ばれる計画が変わる
+
+次のセルは**速さの比較ではありません**。同じ実行可能な計画のリストを、「収支が最大」と「2 人の自由時間の合計が最大」の
+2 つの指標で並べ、1 位を比べます。どちらが「良い」かは、モデルではなく**家族の価値観**で決まります。
+""" + "\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1B：収支が最大の計画と、自由時間が最大の計画（課題5〜7 を使う）
+if bench_ready("generate_work_pairs", "find_feasible_plans", "rank_plans"):
+    try:
+        plans = search_plans(make_work_options(10))
+        if plans:
+            for key, label in [("balance", "収支が最大"), ("free_total", "自由時間の合計が最大")]:
+                best = rank_plans(plans, key)[0]
+                print(f"{label}：{best['option_a']} + {best['option_b']}　分担 {best['care_a']}・{best['care_b']} 時間"
+                      f"　収支 {best['balance']} 万円／年　自由時間 {best['free_a']} + {best['free_b']} = {best['free_total']} 時間／週")
+        else:
+            print("実行可能な計画がありません。")
+    except NotImplementedError:
+        print("[未実装] 課題5〜7 を実装すると表示されます。")
+''')
+md(f"{THINK}" + """
+
+1. k を 10 倍にすると、全候補の数と時間はそれぞれ約何倍になりましたか。O(k² × m) と比べてください。
+2. 実行可能な計画の割合は、k を変えるとどう変わりましたか。下限 `bench_min_free` を変えるとどうなりますか。
+3. 「収支が最大」と「自由時間が最大」の 1 位が違うのはなぜですか。2 つの指標を両方考えるには、どのような方法がありますか。
+""")
+
+# ---------------------------------------------------------------- F-1C
+md("""
+## 8.6 F-1C：線形探索と二分探索（この章の中心となる比較）
+
+| 処理 | 使う関数 | 理論的な計算量 |
+| --- | --- | --- |
+| 予算以下の住宅を線形探索で取り出す | 課題4 `find_candidates` | O(N) |
+| 価格でソートする | `sorted()`（教員提供）／課題5 `sort_by_price`（挿入ソート） | O(N log N)／最悪 O(N²) |
+| ソート済みの価格で、予算以下の件数（境界）を求める | 課題6 `count_affordable` | O(log N) |
+| ソート済みのデータから K 件の候補を取り出す | 課題7 `affordable_ids_binary` | 境界 O(log N) + 取り出し O(K) = O(log N + K) |
+
+- 課題7 の中で**毎回**価格のリストを作ると、そこで O(N) かかります。自分の実装がどちらかを確かめてください。
+- 二分探索は**ソート済みのデータ**が必要です。ソートの時間を含めると、1 回だけ探すなら線形探索のほうが速いことがあります。
+  **二分探索が常に速いわけではありません。**
+- Benchmark Dataset の価格は 1,000〜7,990 万円（10 万円刻み）の 700 種類なので、**同じ価格の住宅が多数**あります。
+""")
+md("### 8.6.1 比較1・2：ソート済みのデータで、件数と候補リストを求める\n\n"
+   "ソートは前処理として先に済ませ（時間は比較3で測る）、探索だけの時間を比べます。予算は 4,000 万円です。\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1C 比較1（件数）・比較2（候補リスト）：線形探索と二分探索（課題4・6・7 を使う）
+BENCH_NO_LIMIT = 10 ** 9       # 通勤時間の条件を外すための大きな値
+BENCH_BUDGET = 4000
+
+
+def make_houses(n, seed=2029):
+    """Benchmark Dataset：人工の住宅を n 件、メモリ上で作る（同じ価格の住宅を多く含む）"""
+    rng = random.Random(seed)
+    return [{"housing_id": f"X{i:06d}", "purchase_price": rng.randrange(1000, 8000, 10),
+             "commute_minutes": rng.randrange(10, 91)} for i in range(n)]
+
+
+def linear_count(houses, budget):
+    """線形探索（課題4）で、予算以下の件数を数える"""
+    return len(find_candidates(houses, budget, BENCH_NO_LIMIT))
+
+
+bench_c_sizes = [100, 1_000, 10_000, 100_000]
+bench_c1, bench_c2 = [], []
+if bench_ready("find_candidates", "count_affordable", "affordable_ids_binary"):
+    try:
+        for n in bench_c_sizes:
+            houses = make_houses(n)
+            sorted_houses = sorted(houses, key=lambda h: h["purchase_price"])      # 前処理（安定なソート）
+            sorted_prices = [h["purchase_price"] for h in sorted_houses]
+            # 比較1：件数
+            c_lin, t_lin = timed(linear_count, (houses, BENCH_BUDGET))
+            c_bin, t_bin = timed(count_affordable, (sorted_prices, BENCH_BUDGET))
+            bench_c1.append((n, c_lin, t_lin, t_bin, "一致" if c_lin == c_bin else "不一致"))
+            # 比較2：候補リスト（線形は入力の順、二分は価格の順なので、ID の集合で比べる）
+            ids_lin, t_ids_lin = timed(find_candidates, (houses, BENCH_BUDGET, BENCH_NO_LIMIT))
+            ids_bin, t_ids_bin = timed(affordable_ids_binary, (sorted_houses, BENCH_BUDGET))
+            same = len(ids_lin) == len(ids_bin) and set(ids_lin) == set(ids_bin)
+            price = {h["housing_id"]: h["purchase_price"] for h in houses}
+            ordered = all(price[a] <= price[b] for a, b in zip(ids_bin, ids_bin[1:]))
+            bench_c2.append((n, len(ids_lin), t_ids_lin, t_ids_bin,
+                             "一致" if same else "不一致", "価格の順" if ordered else "価格の順ではない"))
+    except NotImplementedError:
+        print("[未実装] 課題4・6・7 を実装すると測定できます。")
+print("比較1：予算以下の件数")
+print_table(["N", "件数", "線形探索 O(N) 秒", "二分探索 O(log N) 秒", "件数の確認"], bench_c1)
+print()
+print("比較2：予算以下の候補リスト")
+print_table(["N", "候補 K 件", "線形探索 秒", "二分探索 + 取り出し 秒", "ID の集合", "二分探索の並び順"], bench_c2)
+if bench_c1:
+    plot_lines([r[0] for r in bench_c1],
+               {jp("線形探索（件数）", "linear count"): [r[2] for r in bench_c1],
+                jp("二分探索（件数）", "binary count"): [r[3] for r in bench_c1],
+                jp("線形探索（候補リスト）", "linear list"): [r[2] for r in bench_c2],
+                jp("二分探索（候補リスト）", "binary list"): [r[3] for r in bench_c2]},
+               jp("F-1C：ソート済みのデータでの探索時間（両軸とも対数）", "F-1C: search on sorted data (log-log)"),
+               jp("住宅の件数 N", "N"), jp("秒", "seconds"), log=True)
+''')
+md("### 8.6.2 比較3：1 回だけ探す（ソートの時間を含める）\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1C 比較3：線形探索 1 回 と ソート + 二分探索 1 回（課題4・6 を使う）
+def binary_once(houses, budget):
+    """ソート（前処理）+ 二分探索 1 回"""
+    prices = sorted(h["purchase_price"] for h in houses)
+    return count_affordable(prices, budget)
+
+
+bench_c3 = []
+if bench_ready("find_candidates", "count_affordable"):
+    try:
+        for n in bench_c_sizes:
+            houses = make_houses(n)
+            c_lin, t_lin = timed(linear_count, (houses, BENCH_BUDGET))
+            c_bin, t_bin = timed(binary_once, (houses, BENCH_BUDGET))
+            bench_c3.append((n, t_lin, t_bin, "線形探索" if t_lin < t_bin else "ソート + 二分探索",
+                             "一致" if c_lin == c_bin else "不一致"))
+    except NotImplementedError:
+        print("[未実装] 課題4・6 を実装すると測定できます。")
+print_table(["N", "線形探索 1 回 秒", "ソート + 二分探索 1 回 秒", "速かった方法", "件数の確認"], bench_c3)
+''')
+md("### 8.6.3 比較4：同じデータで Q 回探す（ソートは 1 回だけ）\n\n"
+   "Q 個の予算（同じシードで作る同じ予算の列）について件数を求めます。線形探索は O(Q × N)、"
+   "ソート + 二分探索は O(N log N + Q × log N) です。\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1C 比較4：線形探索を Q 回 と、1 回ソートして二分探索を Q 回（課題4・6 を使う）
+def linear_many(houses, budgets):
+    return [linear_count(houses, b) for b in budgets]
+
+
+def binary_many(houses, budgets):
+    prices = sorted(h["purchase_price"] for h in houses)       # ソートは 1 回だけ。結果を再利用する
+    return [count_affordable(prices, b) for b in budgets]
+
+
+bench_c4 = []
+if bench_ready("find_candidates", "count_affordable"):
+    try:
+        for n in [10_000, 100_000]:
+            houses = make_houses(n)
+            for q in [1, 10, 100]:
+                rng = random.Random(7)
+                budgets = [rng.randrange(1000, 8000, 10) for _ in range(q)]      # 両方の方法で同じ予算の列
+                r_lin, t_lin = timed(linear_many, (houses, budgets))
+                r_bin, t_bin = timed(binary_many, (houses, budgets))
+                bench_c4.append((n, q, t_lin, t_bin, "一致" if r_lin == r_bin else "不一致"))
+    except NotImplementedError:
+        print("[未実装] 課題4・6 を実装すると測定できます。")
+print_table(["N", "Q", "線形探索 × Q 秒", "ソート 1 回 + 二分探索 × Q 秒", "件数の確認"], bench_c4)
+rows_big = [r for r in bench_c4 if r[0] == 100_000]
+if rows_big:
+    plot_lines([r[1] for r in rows_big],
+               {jp("線形探索 × Q", "linear x Q"): [r[2] for r in rows_big],
+                jp("ソート 1 回 + 二分探索 × Q", "sort once + binary x Q"): [r[3] for r in rows_big]},
+               jp("F-1C：探索回数 Q と実行時間（N = 100,000、両軸とも対数）", "F-1C: Q vs time (N = 100,000, log-log)"),
+               jp("探索の回数 Q", "Q"), jp("秒", "seconds"), log=True)
+''')
+md("### 8.6.4 参考：ソートの方法と時間（課題5 の挿入ソートと `sorted()`）\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1C：課題5 の挿入ソートと sorted() の比較（同じ価格は元の順番を保つことも確かめる）
+bench_c5 = []
+if bench_ready("sort_by_price"):
+    try:
+        previous = None
+        for n in [100, 1_000, 3_000, 10_000]:
+            if bench_c5 and too_slow(previous, (n / bench_c5[-1][0]) ** 2):
+                print(f"N = {n:,}：課題5 のソートは時間がかかりそうなので、ここで打ち切ります（O(N²) の目安）。")
+                break
+            houses = make_houses(n)
+            mine, t_mine = timed(sort_by_price, (houses,))
+            builtin, t_builtin = timed(lambda hs: sorted(hs, key=lambda h: h["purchase_price"]), (houses,))
+            previous = t_mine
+            same = [h["housing_id"] for h in mine] == [h["housing_id"] for h in builtin]
+            bench_c5.append((n, t_mine, t_builtin, "一致" if same else "不一致"))
+    except NotImplementedError:
+        print("[未実装] 課題5 を実装すると測定できます。")
+print_table(["N", "課題5 のソート 秒", "sorted() 秒", "並び順の確認（安定）"], bench_c5)
+''')
+md(f"{THINK}" + """
+
+1. 比較1 で、N を 10 倍にすると線形探索と二分探索の時間はそれぞれ約何倍になりましたか。理論的な計算量と比べてください。
+2. 比較3 で、1 回だけ探すならどちらが速かったですか。その理由を、ソートの計算量を使って説明してください。
+3. 比較4 で、Q がいくつ以上なら「1 回ソートして二分探索」のほうが速くなりましたか。N を変えると、その境目はどう変わりそうですか。
+4. 比較2 で、二分探索 + 取り出しの時間は、候補の数 K が多いときにどうなりますか。自分の課題7 の計算量を説明してください。
+""")
+
+# ---------------------------------------------------------------- F-1D
+md("""
+## 8.7 F-1D：移転シナリオの数と年次シミュレーション
+
+| 記号 | 意味 |
+| --- | --- |
+| M | 年間移転額の候補の数 |
+| D | 移転期間の候補の数 |
+| T | シミュレーションの年数 |
+
+| 処理 | 使う関数 | 理論的な計算量 |
+| --- | --- | --- |
+| シナリオを作る（移転額 × 期間） | 課題5 `generate_transfer_scenarios` | O(M × D)（シナリオ数 S = M × D） |
+| 1 つのシナリオの年次シミュレーション | 課題4 `simulate_transfer` | O(T) |
+| 全シナリオを評価し、親の最低生活資金を守れるものを残す | 課題7 `find_feasible_transfers` | O(M × D × T) |
+
+複数の指標（親の資産の維持と、子の資産形成）を同時に最適化する**多目的最適化**や、年ごとに移転額を変える**動的計画法**は、
+Level 3 の発展課題です（この章では扱いません）。
+""")
+md("### 8.7.1 M・D・T を変える\n\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1D：M・D・T を変えて、全シナリオ数・実行可能なシナリオ数・時間を測る（課題5・7 を使う）
+bench_parent = {"person_id": "BP", "family_id": "BENCH", "generation": 1, "role": "parent", "age": 60,
+                "annual_income": 300, "annual_expense": 330, "initial_assets": 2500}
+bench_child = {"person_id": "BC", "family_id": "BENCH", "generation": 2, "role": "child", "age": 30,
+               "annual_income": 380, "annual_expense": 370, "initial_assets": 100}
+BENCH_PARENT_MIN = 1500        # 親の最低生活資金（万円）。教材の仮定値
+
+
+def search_transfers(m, d, years):
+    """移転額 0, 10, 20, ...（M 個）× 期間 0, 2, 4, ...（D 個）のシナリオを作り、評価する"""
+    amounts = [10 * i for i in range(m)]
+    durations = [2 * j for j in range(d)]
+    scenarios = generate_transfer_scenarios(amounts, durations)
+    return find_feasible_transfers(bench_parent, bench_child, scenarios, years, BENCH_PARENT_MIN)
+
+
+bench_d_grid = [(5, 4, 10), (10, 4, 10), (20, 4, 10), (40, 4, 10), (10, 8, 10), (10, 4, 20), (10, 4, 40)]
+bench_d = []
+if bench_ready("generate_transfer_scenarios", "find_feasible_transfers"):
+    try:
+        for m, d, years in bench_d_grid:
+            feasible, seconds = timed(search_transfers, (m, d, years))
+            total = m * d
+            bench_d.append((m, d, years, total, total * years, len(feasible), total - len(feasible), seconds))
+    except NotImplementedError:
+        print("[未実装] 課題5・7（と課題4）を実装すると測定できます。")
+print_table(["M", "D", "T", "シナリオ M×D", "M×D×T", "親の資金を守れる", "守れない", "時間 秒"], bench_d)
+if bench_d:
+    plot_lines([r[4] for r in bench_d[:4]], {jp("時間（M を変える）", "time (vary M)"): [r[7] for r in bench_d[:4]]},
+               jp("F-1D：M×D×T と実行時間（両軸とも対数）", "F-1D: M x D x T vs time (log-log)"),
+               "M × D × T", jp("秒", "seconds"), log=True)
+    plot_lines([r[0] for r in bench_d[:4]],
+               {jp("全シナリオ", "all scenarios"): [r[3] for r in bench_d[:4]],
+                jp("親の資金を守れる", "feasible"): [r[5] for r in bench_d[:4]]},
+               jp("F-1D：移転額の候補数 M とシナリオの数（D = 4、T = 10）", "F-1D: M vs scenarios (D = 4, T = 10)"),
+               jp("移転額の候補数 M", "M"), jp("件数", "count"))
+''')
+md("""
+### 8.7.2 親の資産の維持と、子の資産形成
+
+次のセルも**速さの比較ではありません**。同じ実行可能なシナリオを、「親の最終資産が最大」と「子の最終資産が最大」の
+2 つの指標で比べます。一方を大きくすると、もう一方は小さくなります（資金移転は二重に数えないため）。
+""" + "\n" + TEACHER)
+code('''
+# 【教員提供コード】F-1D：親の最終資産が最大のシナリオと、子の最終資産が最大のシナリオ（課題5・7 を使う）
+if bench_ready("generate_transfer_scenarios", "find_feasible_transfers"):
+    try:
+        feasible = search_transfers(10, 4, 10)
+        if feasible:
+            for key, label in [("parent_final_assets", "親の最終資産が最大"), ("child_final_assets", "子の最終資産が最大")]:
+                best = max(feasible, key=lambda r: r[key])
+                print(f"{label}：年 {best['annual_transfer']} 万円 × {best['duration_years']} 年"
+                      f"　親 {best['parent_final_assets']} 万円　子 {best['child_final_assets']} 万円"
+                      f"　子の資産不足 {best['child_shortage_years']} 年")
+        else:
+            print("親の最低生活資金を守れるシナリオがありません。")
+    except NotImplementedError:
+        print("[未実装] 課題5・7 を実装すると表示されます。")
+''')
+md(f"{THINK}" + """
+
+1. M・D・T をそれぞれ 2 倍にすると、時間は約何倍になりましたか。O(M × D × T) と比べてください。
+2. 親の最低生活資金 `BENCH_PARENT_MIN` を変えると、実行可能なシナリオの数はどう変わりますか。
+3. 親の資産と子の資産の両方を考えて 1 つのシナリオを選ぶには、どのような方法がありますか（例：両方の下限を決める、重みをつける）。
+""")
+
+md("""
+## 8.8 チーム開発の進め方
 
 | 段階 | 内容 |
 | --- | --- |
@@ -2841,7 +3704,7 @@ Benchmark Dataset は、ファイルに保存せず、`random.Random(シード)`
 
 **全員が少なくとも 1 つの関数を実装してください。**
 
-## 8.5 成果物（Notebook に含めるもの）
+## 8.9 成果物（Notebook に含めるもの）
 
 - チームが選んだテーマと、解決しようとする問題
 - 使ったデータ（人工データか、公開統計か。公開統計なら出典）とモデルの仮定

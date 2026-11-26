@@ -20,7 +20,7 @@
 | `f1d/` | `household_assets_small.csv` | 39 | 公開統計（全国家計構造調査） |
 | `f1d/` | `learning_cost_small.csv` | 8 | 公開統計（子供の学習費調査） |
 
-- 各列の意味・単位・出典は `data_dictionary.md` を見てください。
+- 各ファイルの行数・列数・列の意味・単位・入力例・欠損・限界は `data_dictionary.md`、公開統計の出典と利用条件は `dataset_sources.md` を見てください。
 - 公開統計の平均値は、特定の人や家族の将来を予測するものではありません。
 - 公開統計の CSV の空欄は「統計がない・秘匿・該当なし」を表します。0 ではありません。
 - F-1C の実際の不動産取引価格（`f1c/housing_prices_small.csv`）は、授業で用意された場合だけあります。

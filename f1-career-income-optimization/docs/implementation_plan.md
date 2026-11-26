@@ -5,10 +5,10 @@
 | Phase | 内容 | 主な成果物 | 状態 |
 | --- | --- | --- | --- |
 | 1 | 既存教材の監査、C-1 の再利用調査、4 分類への統合、仕様、公開統計の調査、Notebook の骨格、Mini、Tiny の初期設計 | `CLAUDE.md`、`docs/*`、`scripts/build_notebook.py`、Notebook、Tiny 初期版、テスト | 完了（`fff67e5`） |
-| 2 | データセットの準備 | Tiny の完成、`validate_datasets.py`、`download_datasets.py`・`xlsx_reader.py`・`preprocess_*.py`、Small 4 ファイル、データ辞書、前処理の方針と結果 | **完了（2026-11-27、未コミット）**。F-1C の実データは教員の手動取得待ち |
-| 3 | Starter Code の実装 | 全 4 テーマの Level 1・2（28 関数）、3 段階のヒント、Mini と Tiny の動作確認、可視化、Level 3 の発展案、独自機能の候補、参照実装（28 関数） | **完了（2026-11-27、未コミット）** |
-| 4 | 性能評価・参照実装・教育的検証 | テーマ別の性能比較（第8章、件数と時間のグラフ）、計算量の説明の充実、難易度の調整、テストの拡充、学生役による試行 | 未着手 |
-| 5 | 学生配布準備・最終検証 | README・TASKS（100 点の評価案。出典・変更点・説明・テスト・独自機能を評価）、`docs/teacher_guide.md`・`student_package_guide.md`、`build_student_package.py`、`dist/f1-life-planning-starter/` と ZIP、親 README の F1 の更新、`final_validation_report.md` | 未着手 |
+| 2 | データセットの準備 | Tiny の完成、`validate_datasets.py`、`download_datasets.py`・`xlsx_reader.py`・`preprocess_*.py`、Small 4 ファイル、データ辞書、前処理の方針と結果 | 完了（`e5bffc6`）。F-1C は人工データで完成させる |
+| 3 | Starter Code の実装 | 全 4 テーマの Level 1・2（28 関数）、3 段階のヒント、Mini と Tiny の動作確認、可視化、Level 3 の発展案、独自機能の候補、参照実装（28 関数） | 完了（`e5bffc6`） |
+| 4 | 性能評価・参照実装・教育的検証 | テーマ別の性能比較（第8章）、計算量の説明、F-1B の難易度調整、公開統計への橋渡し演習、モデルの妥当性と限界、誤りの検出テスト | **完了（2026-11-27、未コミット）**。学生による試行は教員が実施 |
+| 5 | 学生配布準備・最終検証 | README・TASKS、データ辞書・出典、教員向け文書、`build_student_package.py`、`dist/f1-life-planning-starter/` と ZIP、親 README の F1 行、`final_validation_report.md` | **完了（2026-11-27、未コミット）**。GitHub・LMS への公開は教員が実施 |
 
 ## Phase 4 の詳細
 

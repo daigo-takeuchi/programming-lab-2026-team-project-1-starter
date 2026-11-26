@@ -42,7 +42,7 @@
 | シナリオのコピー（`scenarios.with_changes`） | 全テーマの「入力を変更しない」規則 | simulation_rules に記載、`check()` で検出 |
 | 感度分析・割引率（`experiments.py`） | F-1A Level 3 の候補 | 文書で紹介 |
 | `data/sample_careers.json` | F-1A Tiny の分布の参考 | 値の範囲を参考にした |
-| 倫理・限界（旧 README 17 章） | 新 README・第0章・各章 N.1 | Phase 5 で README に統合 |
+| 倫理・限界（旧 README 17 章） | 新 README・第0章・各章 N.1・N.9「モデルの妥当性と限界」 | 完了 |
 | 教科書コード（`textbook/`） | 使わない | 新 Notebook は標準ライブラリだけで完結 |
 
 ## 3. 旧教材の扱い（教員の承認が必要）
@@ -50,8 +50,8 @@
 | 対象 | 案 | 時期 |
 | --- | --- | --- |
 | 旧 `.py` 7 本・`tests/test_*.py` 4 本・`notebooks/`・`data/sample_careers.json` | `legacy/` へ移動、または現状維持（新 README で旧教材と明記） | Phase 5（承認後） |
-| 旧 `README.md` | `docs/legacy/README_career_income.md` へ移し、新 README を作成 | Phase 5（承認後） |
-| 親 README の F1 行・難易度 | 新名称・新難易度に更新 | Phase 5（承認後） |
+| 旧 `README.md` | `docs/legacy/README_legacy.md` へ移し、新 README を作成 | **完了（Phase 5）**。旧 notebooks/ の「README 17 章」などの参照は旧 README を指す |
+| 親 README の F1 行・難易度 | 新名称・新難易度に更新 | **完了（Phase 5）**。F1 の 2 行だけを変更 |
 | ディレクトリ名 | 現状維持（推奨）、または `f1-life-planning` などへ変更 | 教員判断 |
 
 - 旧教材は**学生配布物（dist/）に含めない**（許可リスト方式）。

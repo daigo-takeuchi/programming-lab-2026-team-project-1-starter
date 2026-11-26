@@ -1,20 +1,22 @@
 # 開発状況
 
-## 現在：Phase 2・3 完了（2026-11-27、未コミット）→ 教員の承認待ち
+## 現在：F-1 統合 Starter v1.0 開発完了（Phase 1〜5、2026-11-27）→ 既存の GitHub モノレポへの統合作業中（feature ブランチ → Pull Request → main）
+
+未実施・未検証（検証済みではない）：F-1C の実データの取得と `preprocess_f1c.py` の実データでの検証、Windows ネイティブ・Google Colab の実機、教員・学生による試行。
 
 | 項目 | 状態 |
 | --- | --- |
-| ブランチ | `feature/f1-integrated-starter`。Phase 1 は `fff67e5`（ローカルのみ）。Phase 2・3 は**未コミット・未 push** |
-| Notebook | `F1_life_planning_starter.ipynb`：第0〜9章、Markdown 200・コード 101 セル。学生実装課題 28（各テーマ Level 1 が 4、Level 2 が 3） |
-| Tiny Dataset | 6 ファイル（25・6・25・30・24・32 行、計 約 4.5KB）。`generate_synthetic_data.py` でシード固定 |
-| データ検証 | `validate_datasets.py`：エラー 0 件、意図的な境界条件 19 件（`docs/data_validation_report.md`） |
-| Small Dataset | 取得・前処理済み 4 ファイル（F-1A 84 行、F-1B 156 行、F-1D 39 行・8 行、計 約 30KB）。F-1C は**未取得**（教員の手動取得） |
-| 原データ | `data/raw/`（Git 管理外）Excel 4 個、約 2.1MB |
-| 参照実装 | `solutions/reference_solutions.py`（Git 管理外）：28 関数。`run_reference_check.py` で動作確認 122 件すべて [OK] |
-| テスト | 新教材 27 件（Notebook 18、データ 9）、旧教材 51 件。計 78 件すべて成功 |
-| 旧教材 | 変更なし。旧テスト 51 件成功 |
-| C-1・他トピック | 変更なし |
-| C: の空き | Phase 2・3 開始時 7.6GB → 終了時 9.2GB（他の要因による増加） |
+| ブランチ | `feature/f1-integrated-starter`。Phase 1 `fff67e5`、Phase 2・3 `e5bffc6`（ローカルのみ、未 push）。Phase 4・5 は**未コミット** |
+| Notebook | `F1_life_planning_starter.ipynb`：第0〜9章、Markdown 242・コード 124 セル。学生実装課題 28 + F-1B の練習 1。第8章に 4 テーマの性能評価 |
+| Tiny Dataset | 6 ファイル（25・6・25・30・24・32 行）。検証：エラー 0 件、境界条件 19 件 |
+| Small Dataset | e-Stat 由来 4 ファイル（84・156・39・8 行）。再配布条件を個別に確認し、Git 管理・配布に収録。F-1C の実データは未取得 |
+| 参照実装 | `solutions/`（Git 管理外）：28 関数 + 練習 1、動作確認 128 件すべて [OK]。誤りの例 17 種類（`student_mistakes.py`） |
+| テスト | 新教材 49 件（Notebook 22、データ 9、誤りの検出 3、配布物 15）＋ 旧教材 51 件 = 100 件すべて成功 |
+| 学生配布物 | `dist/f1-life-planning-starter/`（17 ファイル、406,654 バイト）と ZIP（102,067 バイト、SHA-256 `7fe5dc0d…33c1`。README を既存モノレポの取得手順に直して再生成）。Git 管理外。再生成：`/usr/bin/python3 scripts/build_student_package.py --force` |
+| 学生向け文書 | `README.md`（新）、`TASKS.md`（新）、`data/README.md`・`data_dictionary.md`・`dataset_sources.md`。旧 README は `docs/legacy/README_legacy.md` |
+| 親 README | F1 の説明行 2 行だけを更新 |
+| 旧教材・C-1・他トピック | 変更なし（旧テスト 51 件成功） |
+| C: の空き | Phase 4・5 開始時 9.1GB → 終了時 9.0GB |
 
 ## 検証コマンド（教員の開発環境）
 
@@ -24,36 +26,21 @@ PY=../c1-web-attack-detection/.venv/bin/python     # C-1 の既存環境を借�
 /usr/bin/python3 scripts/generate_synthetic_data.py --check
 /usr/bin/python3 scripts/validate_datasets.py --report
 $PY scripts/build_notebook.py
-$PY -m unittest tests.test_f1_notebook tests.test_f1_synthetic_data -v
-$PY scripts/run_reference_check.py
+$PY -m unittest tests.test_f1_notebook tests.test_f1_synthetic_data tests.test_f1_student_mistakes tests.test_f1_student_package
+$PY scripts/run_reference_check.py                 # 128 件 [OK]（第8章の性能評価も実行、約 20 秒）
 $PY -m unittest tests.test_career_model tests.test_income_analysis tests.test_optimization tests.test_presentation_charts   # 旧教材
+/usr/bin/python3 scripts/build_student_package.py --force
 ```
 
 `tests/` に `__init__.py` がない（旧教材の構成）ため、`unittest discover` は使えない。モジュール名を指定する。
 
-## 検証済み
-
-- 参照実装による全課題の Mini・Tiny の動作確認（122 件 [OK]）
-- 未実装のままの Notebook 全体の実行（[エラー] は第3章の例の 1 件だけ）
-- 各テーマの単独実行（第0〜3章 + 担当章）、data フォルダなし、Small Dataset なし
-- 入力データの書き換えの検出、Mini と Tiny のキー名の一致、参照実装の行が Notebook のコードセルにないこと
-- Notebook の再生成の再現性、編集・実行済みの Notebook への上書きの拒否
-
 ## 未検証・未実施
 
 - `scripts/preprocess_f1c.py`（実際の CSV がないため一度も実行していない）
-- 学生役による試行（ヒントの分かりやすさ、作業時間の実測）
-- Windows 側の Jupyter・VS Code、Google Colab での表示と実行（WSL の nbclient でのみ実行）
-- テーマ別の本格的な性能比較（Phase 4）、学生配布パッケージ（Phase 5）
+- 学生・教員による試行（チェックリストは `docs/educational_validation_report.md` 4 章）、作業時間の実測
+- Windows ネイティブの VS Code・Jupyter、Google Colab、Python 3.12 以外での実行（WSL の nbclient でのみ実行）
+- LMS へのアップロード（教員が行う）。GitHub は既存のモノレポに統合する方針（F-1 専用リポジトリは作らない）
 
-## 教員の判断・作業が必要な事項
+## 教員の残作業
 
-1. F-1C の不動産取引価格 CSV の手動取得（手順は `docs/preprocessing_report.md` 5 章）と、取得後の再配布条件の確認
-2. Small Dataset 4 ファイル（e-Stat 由来）を Git 管理し、学生配布物に含めてよいか（e-Stat 利用規約上は出典と加工の記載で可能）
-3. F-1B 課題6（16 行）の分割、または F-1B Level 1 の強化（Phase 4）
-4. F-1D 課題4 に `duration_years` を加えた変更（Phase 1 の 16 関数のうち、引数を変えた唯一の関数）
-5. 社会生活基本調査（生活時間）を使うか
-
-## 次にやること（承認後）
-
-Phase 4：テーマ別の性能評価、難易度の調整、テストの拡充（`docs/implementation_plan.md`）。
+`docs/final_validation_report.md` 7 章。

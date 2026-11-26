@@ -5,6 +5,50 @@
 
 Notebook の Mini Dataset（第4〜7章）は、同じ意味の項目に同じキー名を使っています。
 
+## ファイルの一覧（概要）
+
+| ファイル | 種類 | 行数 | 列数 | 空欄（欠損） | 出典・利用条件 | 加工内容 |
+| --- | --- | ---: | ---: | --- | --- | --- |
+| `f1a/career_options_tiny.csv` | 人工データ | 25 | 7 | なし | 教材用に作成（仮定値） | ― |
+| `f1b/work_options_tiny.csv` | 人工データ | 6 | 4 | なし | 同上 | ― |
+| `f1b/household_scenarios_tiny.csv` | 人工データ | 25 | 6 | なし | 同上 | ― |
+| `f1c/housing_options_tiny.csv` | 人工データ | 30 | 7 | なし | 同上 | ― |
+| `f1d/family_members_tiny.csv` | 人工データ | 24 | 8 | なし | 同上 | ― |
+| `f1d/transfer_scenarios_tiny.csv` | 人工データ | 32 | 6 | なし | 同上 | ― |
+| `f1a/salary_by_age_small.csv` | 公開統計 | 84 | 12 | 34 個（年齢階級の端 14、統計がない「－」20） | 厚生労働省「令和7年賃金構造基本統計調査」（e-Stat 利用規約） | 男女計・産業計を抜き出し、千円 → 万円 |
+| `f1b/household_expenses_small.csv` | 公開統計 | 156 | 8 | なし | 総務省統計局「家計調査（家計収支編）」2025 年（同上） | 二人以上の世帯を抜き出し、円 → 万円、縦長の形式 |
+| `f1d/household_assets_small.csv` | 公開統計 | 39 | 10 | なし | 総務省統計局「令和6年全国家計構造調査」（同上） | 主な資産・負債を抜き出し、千円 → 万円 |
+| `f1d/learning_cost_small.csv` | 公開統計 | 8 | 9 | 2 個（高等学校の学校給食費：調査対象外） | 文部科学省「令和5年度子供の学習費調査」（同上） | 学校種別の学習費を抜き出し、円 → 万円 |
+
+- 出典の詳しい情報（公式 URL・統計表名・取得日・利用条件・出典の書き方）は `dataset_sources.md` にあります。
+- **空欄は 0 ではありません。** `load_csv()` で読み込むと、数値の列の空欄は `None` になります。計算の前に、空欄の扱いを決めてください。
+- 人工データの値は教材のための**仮定値**です。公開統計の値は**平均値**で、特定の人・家族を表しません。
+
+## 入力例（各ファイルの 1 行目）
+
+```text
+f1a/career_options_tiny.csv        C01,high_school_job_1,18,60,255,0.02,0
+f1b/work_options_tiny.csv          W1,full_time,400,40
+f1b/household_scenarios_tiny.csv   S01,390,50,0,35,0
+f1c/housing_options_tiny.csv       H01,area_A,3000,9.6,50,40,90
+f1d/family_members_tiny.csv        F01-P,F01,1,parent,52,480,360,2900
+f1d/transfer_scenarios_tiny.csv    T01,parent,child,0,1,0
+f1a/salary_by_age_small.csv        all,学歴計,～19歳,,19,19,22.53,20.83,14.98,17868,2025,wage_census_2025
+f1b/household_expenses_small.csv   ～34歳,household_size,世帯人員,3.28,人,2025,二人以上の世帯,family_income_expenditure_2025
+f1d/household_assets_small.csv     all,総世帯,30歳未満,25.9,1.32,315.7,219.7,327.9,2024,national_survey_family_income_2024
+f1d/learning_cost_small.csv        幼稚園,public,公立,18.4646,6.9362,1.5235,10.0049,2023年度,learning_cost_survey_2023
+```
+
+## モデル上の限界（データごと）
+
+| ファイル | 注意すること |
+| --- | --- |
+| 人工データ（Tiny） | 実在の人・家族・住宅ではない。境界条件（同じ値、0、ちょうど条件を満たす値など）を確かめるために作った値 |
+| `salary_by_age_small.csv` | 2025 年の異なる年齢の人の平均（横断的）。同じ人の生涯の推移ではない。学歴の差を因果関係と断定しない。賞与は前年分 |
+| `household_expenses_small.csv` | 二人以上の世帯の平均。世帯人員は年齢階級で違う。月額なので年額にするには 12 倍する。教育費は消費支出に含まれる |
+| `household_assets_small.csv` | 平均値は資産の多い世帯の影響で大きくなりがち。年齢階級の違う値は**別々の世帯**の平均で、親子のデータではない |
+| `learning_cost_small.csv` | 子供 1 人・1 年あたりの平均。在学年数や進学先は自分で仮定する |
+
 ---
 
 ## 人工データ（Tiny Dataset）

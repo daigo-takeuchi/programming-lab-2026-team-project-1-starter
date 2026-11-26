@@ -157,6 +157,39 @@ class TestStructure(unittest.TestCase):
                 for var in theme_vars[other]:
                     self.assertNotRegex(code_text, rf"\b{var}\b", f"第{n}章が {var} を参照")
 
+    def test_f1b_level1_practice(self):
+        """F-1B に Level 1 の統合演習（新しい関数を作らない練習）があり、ヒントと期待値つきの確認がある"""
+        idx = [i for i, (c, ch) in enumerate(zip(self.cells, self.chapters))
+               if ch == 5 and c["cell_type"] == "code" and "【練習：Level 1】" in source(c)]
+        self.assertEqual(len(idx), 1)
+        body = source(self.cells[idx[0]])
+        self.assertNotRegex(body, r"^def ", "練習で新しい関数を作らせない")
+        self.assertIn("TODO", body)
+        for k in ("ヒント1", "ヒント2", "ヒント3"):
+            self.assertIn(k, source(self.cells[idx[0] + 1]))
+        self.assertIn("check(", source(self.cells[idx[0] + 3]))
+
+    def test_b6_four_stages(self):
+        text = "\n".join(source(c) for c, ch in zip(self.cells, self.chapters) if ch == 5)
+        for stage in ("所得の制約", "各人の時間の制約", "育児・介護の時間の充足", "候補の保存"):
+            self.assertIn(stage, text)
+
+    def test_chapter8_benchmarks(self):
+        """第8章に 4 テーマの性能評価があり、乱数シード固定・メモリ上の生成・中央値の測定を使う"""
+        md_text = "\n".join(source(c) for c, ch in zip(self.cells, self.chapters) if ch == 8 and c["cell_type"] == "markdown")
+        code_text = "\n".join(source(c) for c, ch in zip(self.cells, self.chapters) if ch == 8 and c["cell_type"] == "code")
+        for heading in ("## 8.4 F-1A", "## 8.5 F-1B", "## 8.6 F-1C", "## 8.7 F-1D"):
+            self.assertIn(heading, md_text)
+        for term in ("O(N × T)", "O(k² × m)", "O(log N + K)", "O(M × D × T)", "O(N log N)"):
+            self.assertIn(term, md_text)
+        self.assertIn("perf_counter", code_text)
+        self.assertIn("statistics.median", code_text)
+        self.assertRegex(code_text, r"random\.Random\(seed\)")
+        self.assertNotRegex(code_text, r"open\(|\.to_csv|savefig|write_text", "Benchmark Dataset をファイルに保存しない")
+        for var in ("career_options", "tiny_careers", "work_options", "tiny_households", "CARE_SPLITS", "BASIC_HOURS",
+                    "housing_options", "tiny_housing", "transfer_options", "tiny_members"):
+            self.assertNotRegex(code_text, rf"\b{var}\b", f"第8章がテーマ章の変数 {var} を使っている")
+
     def test_outputs_are_empty(self):
         for c in self.cells:
             if c["cell_type"] == "code":
@@ -240,6 +273,14 @@ class TestExecution(unittest.TestCase):
         for n in THEMES:
             with self.subTest(theme=THEMES[n]):
                 self.execute(keep=lambda ch, n=n: ch is not None and (ch <= 3 or ch == n))
+
+    def test_each_theme_with_chapter8(self):
+        """担当テーマの章 + 第8章だけを実行しても止まらない（他のテーマの性能評価はスキップ）"""
+        for n in THEMES:
+            with self.subTest(theme=THEMES[n]):
+                text = self.execute(keep=lambda ch, n=n: ch is not None and (ch <= 3 or ch in (n, 8)))
+                self.assertIn("[スキップ]", text)
+                self.assertEqual(text.count("[エラー]"), 1)
 
     def test_without_small_datasets(self):
         """公開統計（*_small.csv）がなくても、Tiny があれば全体を実行できる"""

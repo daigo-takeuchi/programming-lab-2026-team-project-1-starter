@@ -14,7 +14,7 @@
 ## プロジェクトの目的
 
 プログラミング演習Ⅰ（AI 専門学校、留学生を含む Python 初学者）のチーム開発課題 F-1
-「キャリア・ライフイベント・世代間資源継承のシミュレーションと最適化」の教材。
+「キャリア・ライフイベント・世代間資源継承の意思決定と最適化」（Decision-Making and Optimization of Career Paths, Life Events, and Intergenerational Resource Transfer）の教材。v1.0（Phase 5 完了）。
 身近な社会的問題を題材に、リスト・辞書・for/if・関数・CSV・線形探索・二分探索・ソート・全探索・計算量を学ぶ。
 **経済学や金融の専門知識の習得が目的ではない。** 特定の進路・家族形態・住宅・相続方法を推奨しない。
 
@@ -36,7 +36,7 @@
   ディレクトリ名の変更は親 README のリンクに影響するため、教員の承認なしに行わない。
 - Git ルートは親ディレクトリ（24 トピックのモノレポ、**公開リポジトリ**）。**他のトピックのディレクトリに触れない。C-1 は読み取り専用の参照対象。**
 - 旧教材（`starter.py`、`career_model.py`、`scenarios.py`、`income_analysis.py`、`optimization.py`、`experiments.py`、
-  `presentation_charts.py`、`notebooks/`、`data/sample_careers.json`、`tests/test_career_model.py` など 4 本、旧 `README.md`）は、
+  `presentation_charts.py`、`notebooks/`、`data/sample_careers.json`、`tests/test_career_model.py` など 4 本。旧 README は `docs/legacy/README_legacy.md` に移した）は、
   移行完了まで動く状態で残す。削除・移動は教員の承認を得てから（`docs/migration_plan.md`）。
 - 旧教材の `.py` は完成した実装（F-1A Level 1・2 の解答に相当する部分を含む）。新 Notebook の学生課題にそのまま移植しない。
   公開履歴は書き換えない。学生が旧コードを参考にすることは禁止しないが、出典・変更点・説明・テスト・独自機能を評価する（TASKS で明記）。
@@ -51,6 +51,8 @@
   各テーマに Tiny の動作確認（期待値つき）を Level 1・2 で 1 か所ずつ。**ヒントに完成解答を書かない。**
 - 動作確認の入力は学生の関数を使わずリテラルで用意する（内包表記などで解答の形を見せない）。Tiny の期待値は手計算か参照実装の値を直接書く。
   **Tiny Dataset を作り直したら、build_notebook.py の Tiny の期待値を見直す。**
+- 関数を作らない練習（【練習：Level 1】、F-1B に 1 つ）は TODO の `None` を書きかえる形。参照解答は `solutions/reference_solutions.py` の `PRACTICE`（キーは練習のセルの見出しの文字列）。
+- 第8章の性能評価は `bench_ready`・`timed`（perf_counter の中央値、1 回が `BENCH_LIMIT` 秒を超えたら打ち切り）・`too_slow`・`print_table` を使い、Benchmark Dataset はシード固定でメモリ上に作る。担当テーマ以外の節は「[スキップ]」。
 - 未実装は `raise NotImplementedError("学生実装課題")`。`check()` は `[OK]`・`[NG]`・`[未実装]`・`[エラー]` を区別し、
   `NotImplementedError` だけを未実装として扱う（他の例外は隠さない）。小数は許容誤差で比べる。引数の書き換えを `[NG]` にする。
 - テーマ章は第0〜3章の共通関数（`load_csv`・`show_records`・`check`・`run_if_implemented`・`measure_time`・`compare_speed`・
@@ -65,7 +67,10 @@
 - 生成スクリプトは、実行結果がある Notebook と、生成時の指紋（`metadata.f1_generator.source_fingerprint`）と内容が違う
   Notebook への上書きを拒否する（`--force` で強制）。セル ID は連番で固定。`build_notebook.py` は学生に配布しない。
 - 変更後は：`<python> scripts/build_notebook.py` → `<python> -m unittest tests.test_f1_notebook tests.test_f1_synthetic_data`
-  → `<python> scripts/run_reference_check.py`（参照実装 28 関数、122 件 [OK]）。
+  → `<python> scripts/run_reference_check.py`（参照実装 28 関数 + 練習 1、128 件 [OK]、約 20 秒）
+  → `<python> -m unittest tests.test_f1_student_mistakes tests.test_f1_student_package`（誤りの検出、配布物）。
+- 学生が起こしやすい誤りの実装例は `solutions/student_mistakes.py`（Git 管理外。ほぼ解答なので公開しない）。動作確認を変えたら、17 種類すべてが `[NG]` になるかを確かめる。
+- 各テーマの N.9 に「公開統計への橋渡し演習」（教員提供はデータの確認だけ。年額への変換・純資産などの計算は学生）、N.9 の最後に「モデルの妥当性と限界」の表。
 - 出力（outputs）を含めずにコミットする。
 
 ## 日本語表記
@@ -97,6 +102,13 @@ Markdown・コメント・docstring・TODO・ヒント・文書・グラフの�
 - 不動産取引価格データには家賃・通勤時間がない。実測値のように追加しない。F-1D は個人の追跡データを使わず、集計統計をパラメータにする。
 - e-Stat API・不動産情報ライブラリ API はユーザ登録・API キーが必要。**Claude が登録・キー発行をしない**（教員が行う）。
 
+## 学生配布物
+
+- `scripts/build_student_package.py`（標準ライブラリだけ）→ `dist/f1-life-planning-starter/` と ZIP（Git 管理外）。**許可リスト方式**（17 ファイル）。
+  Notebook・README・TASKS・data の文書・Tiny・Small を変えたら `--force` で作り直し、`tests/test_f1_student_package.py` を実行する。
+- 学生向けの文書（README・TASKS・data/*.md）に、配布しないファイル（scripts/、docs/、solutions/ など）への言及を書かない（テストで検査）。
+- GitHub では既存のモノレポ（C-1 と同じ）の `f1-career-income-optimization/` で配布し、F-1 専用のリポジトリは作らない。ZIP（Git 管理外、GitHub にコミットしない）は LMS 用。LMS へのアップロードは教員が行う（`docs/student_distribution_plan.md`）。
+
 ## ストレージ・依存関係
 
 - Windows C: の空きは 9.2GB（2026-11-27、Phase 3 終了時）。WSL の仮想ディスクも C: 上にあるため、Linux 側の `df /` は判断に使わない（`df -h /mnt/c` を見る）。
@@ -108,7 +120,8 @@ Markdown・コメント・docstring・TODO・ヒント・文書・グラフの�
 
 ## Git
 
-- 作業ブランチ：`feature/f1-integrated-starter`（main `c911693` から作成）。Phase 1：`fff67e5`（ローカル）。コミットは教員の指示があるときだけ。
+- 作業ブランチ：`feature/f1-integrated-starter`（main `c911693` から作成）。Phase 1：`fff67e5`、Phase 2・3：`e5bffc6`、Phase 4・5：v1.0。コミット・push は教員の指示があるときだけ。
+- v1.0 の検証：テスト 100 件、参照実装 128 件 [OK]、誤り 17 種類の検出。未実施・未検証：F-1C の実データと `preprocess_f1c.py`、Windows ネイティブ・Colab の実機、教員・学生の試行。
 - 承認なしに行わない：push、マージ、`reset --hard`、`git clean`、stash、履歴の書き換え、force push、ブランチの削除、リモート設定・公開範囲の変更。
 - Git 管理外：`solutions/`（教員用参照実装）、`dist/`、`data/raw/`、`data/interim/`、`results/`、仮想環境、秘密情報。
 - 親リポジトリの `.gitignore` は `*.log` と `textbook/**/*.py` を除外している。`textbook/` の教科書コードは再配布未確認のため追跡しない。
