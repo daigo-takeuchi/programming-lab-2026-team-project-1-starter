@@ -1,4 +1,4 @@
-# F-1：Tiny Dataset（人工データ、Phase 1 初期版）のテスト。標準ライブラリだけで実行できる。
+# F-1：Tiny Dataset（人工データ）の再現性・境界条件、データ検証、Mini と Tiny のキー名の一致のテスト。
 #   <python> -m unittest tests.test_f1_synthetic_data -v
 
 import csv
@@ -67,6 +67,44 @@ class TestTinyDatasets(unittest.TestCase):
         members = read("f1d/family_members_tiny.csv")
         self.assertTrue(any(int(r["annual_income"]) < int(r["annual_expense"]) for r in members
                             if r["role"] == "parent"), "赤字の親がいない")
+
+
+class TestValidationAndSchema(unittest.TestCase):
+
+    def test_validate_datasets_has_no_errors(self):
+        """validate_datasets.py：データの破損 0 件、意図的な境界条件がすべて存在する"""
+        spec = importlib.util.spec_from_file_location("val", PROJECT_DIR / "scripts" / "validate_datasets.py")
+        val = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(val)
+        res = val.validate(val.Result())
+        self.assertEqual(res.errors, [])
+        self.assertGreaterEqual(len(res.boundaries), 19)
+
+    def test_mini_keys_match_tiny_columns(self):
+        """Notebook の Mini Dataset のキーが、同じ意味の Tiny Dataset の列名と一致する"""
+        import importlib
+        if importlib.util.find_spec("nbformat") is None:
+            self.skipTest("nbformat がない")
+        spec = importlib.util.spec_from_file_location("nb", PROJECT_DIR / "scripts" / "build_notebook.py")
+        nb = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(nb)
+        import textwrap
+        ns = {"show_records": lambda *a, **k: None, "print": lambda *a, **k: None}
+        for theme in (nb.F1A, nb.F1B, nb.F1C, nb.F1D):
+            exec(textwrap.dedent(theme["mini_code"]), ns)
+        pairs = [
+            (ns["career_options"], "f1a/career_options_tiny.csv", set()),
+            (ns["work_options"], "f1b/work_options_tiny.csv", set()),
+            ([ns["household"]], "f1b/household_scenarios_tiny.csv", set()),
+            (ns["housing_options"], "f1c/housing_options_tiny.csv", set()),
+            (ns["family"], "f1d/family_members_tiny.csv", set()),
+            # Tiny の移転シナリオには ID と送り手・受け手の列が追加されている
+            (ns["transfer_options"], "f1d/transfer_scenarios_tiny.csv", {"scenario_id", "sender_role", "receiver_role"}),
+        ]
+        for mini, rel, tiny_only in pairs:
+            columns = set(read(rel)[0].keys())
+            for row in mini:
+                self.assertEqual(set(row.keys()), columns - tiny_only, rel)
 
 
 if __name__ == "__main__":

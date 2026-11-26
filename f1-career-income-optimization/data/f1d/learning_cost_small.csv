@@ -1,0 +1,9 @@
+school_type,ownership_code,ownership,total_cost,school_education_cost,school_lunch_cost,out_of_school_cost,survey_year,source
+幼稚園,public,公立,18.4646,6.9362,1.5235,10.0049,2023年度,learning_cost_survey_2023
+幼稚園,private,私立,34.7338,15.4062,3.5741,15.7535,2023年度,learning_cost_survey_2023
+小学校,public,公立,36.6599,7.4336,3.5774,25.6489,2023年度,learning_cost_survey_2023
+小学校,private,私立,174.1516,97.8271,5.3578,70.9667,2023年度,learning_cost_survey_2023
+中学校,public,公立,54.245,15.0761,3.5671,35.6018,2023年度,learning_cost_survey_2023
+中学校,private,私立,156.0359,112.8061,0.9317,42.2981,2023年度,learning_cost_survey_2023
+高等学校（全日制）,public,公立,59.6954,35.1523,,24.5431,2023年度,learning_cost_survey_2023
+高等学校（全日制）,private,私立,117.9261,83.265,,34.6611,2023年度,learning_cost_survey_2023

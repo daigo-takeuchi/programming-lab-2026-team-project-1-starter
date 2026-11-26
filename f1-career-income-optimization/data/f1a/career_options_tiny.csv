@@ -20,6 +20,7 @@ C18,junior_college_job_4,20,65,280,0.023,250
 C19,university_job_4,22,70,330,0.03,480
 C20,graduate_job_4,24,65,390,0.024,460
 C21,zero_growth,18,65,300,0.0,0
-C22,high_cost,26,65,320,0.02,2000
+C22,high_cost,30,65,300,0.01,1500
 C23,short_career,64,65,300,0.02,0
 C24,same_as_C21,18,65,300,0.0,0
+C25,no_working_period,65,65,300,0.02,0

@@ -1,4 +1,4 @@
-# F-1：統合 Notebook の構造・再生成・実行のテスト（Phase 1）
+# F-1：統合 Notebook の構造・再生成・実行のテスト
 #
 # 構造のテストは標準ライブラリだけで実行できる。
 # 再生成のテストには nbformat、実行のテストには nbformat・nbclient・ipykernel が必要（なければスキップ）。
@@ -77,11 +77,47 @@ class TestStructure(unittest.TestCase):
                          "完成イメージ", "この章の進め方", "想定作業時間"):
                 self.assertIn(item, text)
 
-    def test_level1_tasks(self):
+    def test_task_counts(self):
+        """各テーマ Level 1 が 4 課題、Level 2 が 3 課題（合計 28）。テーマ章以外に課題はない"""
         for n in THEMES:
-            stubs = [c for c, ch in zip(self.cells, self.chapters)
-                     if ch == n and c["cell_type"] == "code" and "【学生実装課題：Level 1】" in source(c)]
-            self.assertEqual(len(stubs), 4, f"第{n}章の Level 1 課題の数")
+            for level, count in (("Level 1", 4), ("Level 2", 3)):
+                stubs = [c for c, ch in zip(self.cells, self.chapters)
+                         if ch == n and c["cell_type"] == "code" and f"【学生実装課題：{level}】" in source(c)]
+                self.assertEqual(len(stubs), count, f"第{n}章の {level} 課題の数")
+        all_stubs = [c for c in self.cells if c["cell_type"] == "code" and "【学生実装課題" in source(c)]
+        self.assertEqual(len(all_stubs), 28)
+
+    def test_function_names_unique(self):
+        names = []
+        for c in self.cells:
+            if c["cell_type"] == "code" and "【学生実装課題" in source(c):
+                names += re.findall(r"^def (\w+)\(", source(c), re.M)
+        self.assertEqual(len(names), 28)
+        self.assertEqual(len(names), len(set(names)), "学生実装課題の関数名が重複")
+
+    def test_no_reference_solution_in_notebook(self):
+        """教員用参照実装（solutions/、Git 管理外）の本体の行が、Notebook のコードセルに含まれていない
+        （ヒントの Markdown には for 文の書き出しなどの「文法の例」を意図的に書いているので対象外）"""
+        ref = PROJECT_DIR / "solutions" / "reference_solutions.py"
+        if not ref.exists():
+            self.skipTest("参照実装がない")
+        ns = {}
+        exec(ref.read_text(encoding="utf-8"), ns)
+        text = "\n".join(source(c) for c in self.cells if c["cell_type"] == "code")
+        for name, body in ns["SOLUTIONS"].items():
+            for line in body.strip().splitlines()[1:]:
+                line = line.strip()
+                if len(line) >= 30 and not line.startswith(("#", '"""')):
+                    self.assertNotIn(line, text, f"{name} の参照実装の行が Notebook にある: {line}")
+
+    def test_tiny_checks_present(self):
+        """各テーマに Tiny Dataset の期待値つき動作確認（Level 1・2）がある"""
+        for n in THEMES:
+            tiny = [c for c, ch in zip(self.cells, self.chapters)
+                    if ch == n and c["cell_type"] == "code" and "【動作確認】Tiny Dataset" in source(c)]
+            self.assertEqual(len(tiny), 2, f"第{n}章の Tiny の動作確認")
+            for c in tiny:
+                self.assertIn("check(", source(c))
 
     def test_student_stubs_are_unimplemented(self):
         for c in self.cells:
@@ -107,8 +143,10 @@ class TestStructure(unittest.TestCase):
 
     def test_theme_chapters_do_not_reference_other_themes(self):
         """テーマ章は、他のテーマのデータフォルダ・Mini Dataset の変数を使わない"""
-        theme_vars = {4: ["career_options", "tiny_careers"], 5: ["work_options", "household", "tiny_households"],
-                      6: ["housing_options", "tiny_housing"], 7: ["family", "transfer_options", "tiny_members"]}
+        theme_vars = {4: ["career_options", "tiny_careers", "salary_small"],
+                      5: ["work_options", "household", "tiny_households", "CARE_SPLITS", "BASIC_HOURS"],
+                      6: ["housing_options", "tiny_housing", "prices_small"],
+                      7: ["family", "transfer_options", "tiny_members", "assets_small"]}
         for n in THEMES:
             code_text = "\n".join(source(c) for c, ch in zip(self.cells, self.chapters)
                                   if ch == n and c["cell_type"] == "code")
@@ -202,6 +240,15 @@ class TestExecution(unittest.TestCase):
         for n in THEMES:
             with self.subTest(theme=THEMES[n]):
                 self.execute(keep=lambda ch, n=n: ch is not None and (ch <= 3 or ch == n))
+
+    def test_without_small_datasets(self):
+        """公開統計（*_small.csv）がなくても、Tiny があれば全体を実行できる"""
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copytree(PROJECT_DIR / "data", Path(tmp) / "data",
+                            ignore=shutil.ignore_patterns("*_small.csv", "raw", "interim"))
+            text = self.execute(workdir=Path(tmp))
+            self.assertIn("Small Dataset がありません", text)
+            self.assertEqual(text.count("[エラー]"), 1)
 
     def test_without_data_folder(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,9 +1,10 @@
-"""【教員用】F-1 の Tiny Dataset（人工データ）を生成する ― Phase 1 初期版
+"""【教員用】F-1 の Tiny Dataset（人工データ）を生成する（Phase 2 で完成）
 
 - すべて教材のための人工データ（仮定値）。実際の統計・物件・人物ではない。
 - 乱数のシードを固定しているので、何回実行しても同じ CSV になる（UTF-8、改行 LF）。
 - 通常のケースに加えて、境界条件・制約違反のケースを意図的に入れている（各関数のコメント）。
-- Phase 2 で件数・分布・境界条件を見直し、scripts/validate_datasets.py で検証する予定。
+- 生成後は scripts/validate_datasets.py で検証する。境界条件の一覧は docs/data_validation_report.md。
+- **Notebook の Tiny の期待値（build_notebook.py）はこのデータに合わせて書いてある。データを作り直したら期待値も見直す。**
 - 標準ライブラリだけで動く。
 
 使い方（f1-career-income-optimization ディレクトリで）:
@@ -42,16 +43,20 @@ def career_options(rng):
             "annual_growth": round(rng.uniform(*gr), 3),
             "education_cost": rng.randrange(cost[0], cost[1] + 1, 10) if cost[1] else 0,
         })
-    # 境界条件：昇給率 0、教育費が大きく回収できない候補、開始年齢と退職年齢が近い候補、同じ値の候補
+    # 境界条件：昇給率 0、教育費が大きく回収できない候補、開始年齢と退職年齢が近い候補、同じ値（同じ生涯所得）の候補
     rows += [
         {"career_id": "C21", "career_name": "zero_growth", "start_age": 18, "retirement_age": 65,
          "initial_salary": 300, "annual_growth": 0.0, "education_cost": 0},
-        {"career_id": "C22", "career_name": "high_cost", "start_age": 26, "retirement_age": 65,
-         "initial_salary": 320, "annual_growth": 0.02, "education_cost": 2000},
+        # 教育費を回収できない候補：C21（18 歳就職・昇給なし）に退職まで追いつかない
+        {"career_id": "C22", "career_name": "high_cost", "start_age": 30, "retirement_age": 65,
+         "initial_salary": 300, "annual_growth": 0.01, "education_cost": 1500},
         {"career_id": "C23", "career_name": "short_career", "start_age": 64, "retirement_age": 65,
          "initial_salary": 300, "annual_growth": 0.02, "education_cost": 0},
         {"career_id": "C24", "career_name": "same_as_C21", "start_age": 18, "retirement_age": 65,
          "initial_salary": 300, "annual_growth": 0.0, "education_cost": 0},
+        # 就業期間 0（開始年齢 = 退職年齢）
+        {"career_id": "C25", "career_name": "no_working_period", "start_age": 65, "retirement_age": 65,
+         "initial_salary": 300, "annual_growth": 0.02, "education_cost": 0},
     ]
     return rows
 
@@ -87,6 +92,9 @@ def household_scenarios(rng):
          "required_childcare_hours": 120, "required_eldercare_hours": 70},
         {"scenario_id": "S24", "living_cost": 900, "childcare_cost": 100, "eldercare_cost": 0,
          "required_childcare_hours": 20, "required_eldercare_hours": 0},
+        # 時間制約をちょうど満たす：2 人ともフルタイム（40 時間）で各 51 時間ずつ担うと、残り時間がちょうど 0
+        {"scenario_id": "S25", "living_cost": 400, "childcare_cost": 60, "eldercare_cost": 40,
+         "required_childcare_hours": 60, "required_eldercare_hours": 42},
     ]
     return rows
 
@@ -106,9 +114,9 @@ def housing_options(rng):
             "annual_maintenance_cost": rng.randrange(15, 41, 5),
             "commute_minutes": commute,
         })
-    # 境界条件：同じ価格の物件を確実に含める
-    rows[1]["purchase_price"] = rows[0]["purchase_price"]
-    rows[2]["purchase_price"] = rows[0]["purchase_price"]
+    # 境界条件：同じ価格の物件を確実に含める（3,000 万円ちょうどの物件を 3 件。予算 3,000 の境界の確認に使う）
+    for i in (0, 1, 2):
+        rows[i]["purchase_price"] = 3000
     return rows
 
 
@@ -130,11 +138,12 @@ def family_members(rng):
 
 
 def transfer_scenarios(rng):
-    """F-1D：資金移転のシナリオ 24 件（額 × 開始年 × 期間）。移転額 0 を含む"""
+    """F-1D：資金移転のシナリオ 32 件（額 × 開始年 × 期間）。移転額 0・期間 0 を含む。
+    Level 1・2 は start_year = 1 の行を使う。start_year = 3 の行は Level 3（移転の時期を変える）用。"""
     rows, i = [], 1
     for amount in (0, 50, 100, 150):
         for start in (1, 3):
-            for duration in (2, 4, 6):
+            for duration in (0, 2, 4, 6):
                 rows.append({"scenario_id": f"T{i:02d}", "sender_role": "parent", "receiver_role": "child",
                              "annual_transfer": amount, "start_year": start, "duration_years": duration})
                 i += 1

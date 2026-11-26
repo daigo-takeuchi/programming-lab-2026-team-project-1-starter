@@ -1,7 +1,7 @@
 housing_id,area,purchase_price,monthly_rent,floor_area,annual_maintenance_cost,commute_minutes
-H01,area_A,2400,9.6,50,40,90
-H02,area_B,2400,14.3,80,20,40
-H03,area_C,2400,12.3,80,30,60
+H01,area_A,3000,9.6,50,40,90
+H02,area_B,3000,14.3,80,20,40
+H03,area_C,3000,12.3,80,30,60
 H04,area_D,2400,9.2,80,20,85
 H05,area_E,2700,9.7,45,30,55
 H06,area_F,3600,11.9,55,15,40

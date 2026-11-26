@@ -7,7 +7,7 @@
 2. `docs/development_status.md`（現在の Phase と、次にやること）
 3. `docs/implementation_plan.md`（Phase の分け方と計画）
 4. `docs/migration_plan.md`（旧教材からの移行計画）
-5. データを扱うときは `docs/dataset_feasibility_report.md`・`docs/dataset_sources.md`
+5. データを扱うときは `docs/dataset_sources.md`・`docs/preprocessing_policy.md`・`docs/preprocessing_report.md`・`docs/data_validation_report.md`
 
 詳しい仕様は `docs/project_specification.md`、モデルの仮定は `docs/model_assumptions.md`・`docs/simulation_rules.md`。
 
@@ -39,15 +39,18 @@
   `presentation_charts.py`、`notebooks/`、`data/sample_careers.json`、`tests/test_career_model.py` など 4 本、旧 `README.md`）は、
   移行完了まで動く状態で残す。削除・移動は教員の承認を得てから（`docs/migration_plan.md`）。
 - 旧教材の `.py` は完成した実装（F-1A Level 1・2 の解答に相当する部分を含む）。新 Notebook の学生課題にそのまま移植しない。
+  公開履歴は書き換えない。学生が旧コードを参考にすることは禁止しないが、出典・変更点・説明・テスト・独自機能を評価する（TASKS で明記）。
 
 ## 教材の構成ルール
 
 - Notebook：`F1_life_planning_starter.ipynb`（第0〜9章）。学生は第0〜3章 → 担当テーマ章 → 第8章。第9章は任意。
 - 各テーマ章は同じ 10 節（N.1〜N.10）と 5 STEP。STEP 1〜3 = Level 1（必須）、STEP 4 = Level 2、STEP 5 = Level 3。
   章の冒頭に「解決する問題・入力・内部の計算・出力・完成イメージ・進め方・想定作業時間（設計上の見積もり）」の表。
-- Level 1 は 1 テーマ 4 課題（1 関数 3〜15 行程度）。Level 2 は 2〜3 課題（Phase 3 で実装）。
-- 各課題に：関数名・引数・戻り値・例・ひな形・TODO・3 段階のヒント（考え方／文法・データ構造／疑似コード）・Mini と Tiny の動作確認。
-  **ヒントに完成解答を書かない。**
+- Level 1 は 1 テーマ 4 課題、Level 2 は 3 課題（計 28 関数。1 関数 1〜16 行）。関数名の一覧は `docs/project_specification.md` 3 章。
+- 各課題に：関数名・引数・戻り値・例・ひな形・TODO・3 段階のヒント（考え方／文法・データ構造／疑似コード）・Mini の動作確認。
+  各テーマに Tiny の動作確認（期待値つき）を Level 1・2 で 1 か所ずつ。**ヒントに完成解答を書かない。**
+- 動作確認の入力は学生の関数を使わずリテラルで用意する（内包表記などで解答の形を見せない）。Tiny の期待値は手計算か参照実装の値を直接書く。
+  **Tiny Dataset を作り直したら、build_notebook.py の Tiny の期待値を見直す。**
 - 未実装は `raise NotImplementedError("学生実装課題")`。`check()` は `[OK]`・`[NG]`・`[未実装]`・`[エラー]` を区別し、
   `NotImplementedError` だけを未実装として扱う（他の例外は隠さない）。小数は許容誤差で比べる。引数の書き換えを `[NG]` にする。
 - テーマ章は第0〜3章の共通関数（`load_csv`・`show_records`・`check`・`run_if_implemented`・`measure_time`・`compare_speed`・
@@ -62,7 +65,7 @@
 - 生成スクリプトは、実行結果がある Notebook と、生成時の指紋（`metadata.f1_generator.source_fingerprint`）と内容が違う
   Notebook への上書きを拒否する（`--force` で強制）。セル ID は連番で固定。`build_notebook.py` は学生に配布しない。
 - 変更後は：`<python> scripts/build_notebook.py` → `<python> -m unittest tests.test_f1_notebook tests.test_f1_synthetic_data`
-  → `<python> scripts/run_reference_check.py`（参照実装がある場合）。
+  → `<python> scripts/run_reference_check.py`（参照実装 28 関数、122 件 [OK]）。
 - 出力（outputs）を含めずにコミットする。
 
 ## 日本語表記
@@ -73,25 +76,30 @@ Markdown・コメント・docstring・TODO・ヒント・文書・グラフの�
 
 ## モデルの約束（詳細は docs/simulation_rules.md）
 
-- 金額は万円、時間は時間／週（1 人 168 時間）、年齢は歳。`monthly_` と `annual_` で月額・年額を区別。
+- 金額は万円、時間は時間／週（1 人 168 時間）、年齢は歳。F-1B の時間は 4 区分（基本生活＝睡眠・食事・身支度、労働＝仕事 + 通勤、育児・介護、残り）で重ねない。基本生活時間 77 はパラメータ `BASIC_HOURS`。`monthly_` と `annual_` で月額・年額を区別。
 - 所得（額面）と可処分所得、資産残高と年間収支、初期状態と年末状態を区別する。シミュレーションの 1 年目は `year = 1`（年末の状態を記録）。
 - 赤字・資産不足を 0 に置き換えない。資金移転は二重計上しない（親の減少額 = 子の増加額）。入力データを書き換えない。
 - 仮定値と公開統計の値を区別する。税・社会保険・インフレ・資産価格変動は基本モデルでは省略し、限界として明記する。
 
 ## データ方針
 
-- Mini（Notebook 内 3〜10 件、人工）→ Tiny（CSV 20〜50 件、人工、`scripts/generate_synthetic_data.py`、シード 2026）
-  → Small（公開統計由来 50〜1,000 件、Phase 2）→ Benchmark（プログラム内で生成、ファイルに保存しない）。
+- Mini（Notebook 内、人工）→ Tiny（CSV 6〜32 行、人工、`scripts/generate_synthetic_data.py`、シード 2026〜）
+  → Small（公開統計由来 8〜156 行）→ Benchmark（プログラム内で生成、ファイルに保存しない）。
+- Mini と Tiny は同じ意味の項目に同じキー名（`initial_assets`、`duration_years` など。テストで検査）。
+- データの検証は `scripts/validate_datasets.py`。**意図的な制約違反（学生が検出する対象）とデータの破損を区別する**。
 - Level 1・2 は Mini と Tiny だけで完結すること。Small がなくても Notebook が止まらないこと。
 - 人工データのファイル名は `_tiny`、公開統計由来は `_small`。原データは `data/raw/`（Git 管理外）。
 - 学生が計算すべき集計値・累積値・探索結果を前処理で計算済みにしない。欠損値・秘匿値を 0 にしない。
 - 公開統計は出典と「加工して作成」の旨を記載（e-Stat は政府標準利用規約 第2.0版、CC BY 4.0 互換）。再配布条件が未確認のデータは配布物に入れない。
+- 公開統計の取得は `scripts/download_datasets.py`（e-Stat のファイルダウンロード、登録不要）→ `data/raw/`（Git 管理外）→ `preprocess_f1a/b/d.py`（Excel は `xlsx_reader.py`、標準ライブラリ）。
+  F-1C の不動産取引価格は Web 画面の操作でしか取れない（内部 URL を呼ばない）ため教員が手動取得し、`preprocess_f1c.py`（未検証）で変換する。
+- 公開統計は男女計だけを使う（性別の区分を使わない）。年額の計算（月額 × 12 + 賞与）や純資産（資産 − 負債）は学生が行う。
 - 不動産取引価格データには家賃・通勤時間がない。実測値のように追加しない。F-1D は個人の追跡データを使わず、集計統計をパラメータにする。
 - e-Stat API・不動産情報ライブラリ API はユーザ登録・API キーが必要。**Claude が登録・キー発行をしない**（教員が行う）。
 
 ## ストレージ・依存関係
 
-- Windows C: の空きは 7.8GB（2026-11-27、Phase 1 開始時）。WSL の仮想ディスクも C: 上にあるため、Linux 側の `df /` は判断に使わない（`df -h /mnt/c` を見る）。
+- Windows C: の空きは 9.2GB（2026-11-27、Phase 3 終了時）。WSL の仮想ディスクも C: 上にあるため、Linux 側の `df /` は判断に使わない（`df -h /mnt/c` を見る）。
   2GB 未満なら軽量な作業だけにし、減り続けるなら報告して止まる。
 - 新しい仮想環境を作らない。大容量ライブラリをインストールしない。10MB を超える個別ファイル・合計 50MB を超えるデータ取得は事前に承認を得る。
 - 教員側の開発・検証は C-1 の既存環境 `../c1-web-attack-detection/.venv/bin/python`（nbformat・nbclient・ipykernel・matplotlib）を**パス指定で借用**している。
@@ -100,7 +108,7 @@ Markdown・コメント・docstring・TODO・ヒント・文書・グラフの�
 
 ## Git
 
-- 作業ブランチ：`feature/f1-integrated-starter`（main `c911693` から作成）。コミットは教員の指示があるときだけ。
+- 作業ブランチ：`feature/f1-integrated-starter`（main `c911693` から作成）。Phase 1：`fff67e5`（ローカル）。コミットは教員の指示があるときだけ。
 - 承認なしに行わない：push、マージ、`reset --hard`、`git clean`、stash、履歴の書き換え、force push、ブランチの削除、リモート設定・公開範囲の変更。
 - Git 管理外：`solutions/`（教員用参照実装）、`dist/`、`data/raw/`、`data/interim/`、`results/`、仮想環境、秘密情報。
 - 親リポジトリの `.gitignore` は `*.log` と `textbook/**/*.py` を除外している。`textbook/` の教科書コードは再配布未確認のため追跡しない。
