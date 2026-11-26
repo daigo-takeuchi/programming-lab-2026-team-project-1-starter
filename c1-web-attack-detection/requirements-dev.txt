@@ -1,0 +1,6 @@
+# 教員の開発・検証用（学生は不要）
+# Notebook の生成（scripts/build_notebook.py）と実行テスト（tests/test_notebook.py）に使う。
+nbformat>=5.9
+nbclient>=0.10
+ipykernel>=6.29
+matplotlib>=3.7

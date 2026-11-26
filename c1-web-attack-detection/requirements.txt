@@ -1,0 +1,10 @@
+# C-1 Cybersecurity Programming Starter：学生用の依存ライブラリ
+#
+# 基本課題（Level 1）と改良課題（Level 2）は、Python 標準ライブラリだけで実行できます。
+# 次のライブラリは、グラフ表示（第9章、Level 3）のためだけに使います。なくても Notebook は最後まで実行できます。
+matplotlib>=3.7
+
+# Jupyter Notebook を自分の PC で実行する場合は、次のどちらかが必要です。
+#   - VS Code の Jupyter 拡張機能 + ipykernel
+#   - JupyterLab（pip install jupyterlab）
+# Google Colab では追加のインストールは不要です。

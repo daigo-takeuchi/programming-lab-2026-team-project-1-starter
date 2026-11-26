@@ -1,0 +1,33 @@
+request_id,timestamp,src_ip,method,url,status,label
+1,2026-11-20T10:00:36,192.0.2.33,GET,/search?q=50%25+off+sale,200,benign
+2,2026-11-20T10:05:28,192.0.2.33,POST,/contact/send,200,benign
+3,2026-11-20T10:05:53,192.0.2.34,GET,/products?id=31&sort=price,200,benign
+4,2026-11-20T10:12:33,192.0.2.33,GET,/about,200,benign
+5,2026-11-20T10:12:52,192.0.2.33,GET,/contact,200,benign
+6,2026-11-20T10:15:48,192.0.2.31,GET,/help/faq,200,benign
+7,2026-11-20T10:19:59,192.0.2.31,GET,/products,200,benign
+8,2026-11-20T10:24:01,192.0.2.31,GET,/search?q=usb+cable&page=2,200,benign
+9,2026-11-20T10:25:00,203.0.113.66,GET,/products?id=1' OR '1'='1,200,sqli
+10,2026-11-20T10:25:07,203.0.113.66,GET,"/products?id=1 UNION SELECT name, password FROM users",200,sqli
+11,2026-11-20T10:25:14,203.0.113.66,GET,/search?q=' OR 1=1 --,400,sqli
+12,2026-11-20T10:25:21,203.0.113.66,GET,/search?q=<script>alert(1)</script>,400,xss
+13,2026-11-20T10:25:28,203.0.113.66,GET,/comment?text=<img src=x onerror=alert(1)>,200,xss
+14,2026-11-20T10:25:35,203.0.113.66,GET,/download?file=../../etc/passwd,400,traversal
+15,2026-11-20T10:25:42,203.0.113.66,GET,/download?file=..%2F..%2Fconfig.ini,400,traversal
+16,2026-11-20T10:25:49,203.0.113.66,GET,/search?q=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,400,long_url
+17,2026-11-20T10:25:54,192.0.2.31,GET,/products?category=books&sort=new&page=3&lang=ja&view=list,200,benign
+18,2026-11-20T10:25:56,203.0.113.66,GET,/api/items?filter=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&debug=true,200,long_url
+19,2026-11-20T10:26:03,203.0.113.66,GET,/admin,404,scan
+20,2026-11-20T10:26:10,203.0.113.66,GET,/admin/login.php,404,scan
+21,2026-11-20T10:26:17,203.0.113.66,GET,/backup.zip,404,scan
+22,2026-11-20T10:28:41,192.0.2.33,GET,/products?id=7,200,benign
+23,2026-11-20T10:29:14,192.0.2.32,GET,/,200,benign
+24,2026-11-20T10:29:29,192.0.2.34,GET,/news/2026-11,200,benign
+25,2026-11-20T10:32:23,192.0.2.32,GET,/products?id=12,200,benign
+26,2026-11-20T10:35:25,192.0.2.31,GET,/search?q=keyboard,200,benign
+27,2026-11-20T10:36:02,192.0.2.31,POST,/login,200,benign
+28,2026-11-20T10:39:35,192.0.2.31,POST,/cart/add?id=12,200,benign
+29,2026-11-20T10:51:38,192.0.2.33,GET,/images/logo.png,200,benign
+30,2026-11-20T10:52:18,192.0.2.32,GET,/search?q=it's+a+gift,200,benign
+31,2026-11-20T10:58:17,192.0.2.32,GET,/cart,200,benign
+32,2026-11-20T10:59:55,192.0.2.34,GET,/index.html,200,benign
