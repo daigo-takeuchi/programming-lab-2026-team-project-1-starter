@@ -9,3 +9,15 @@ __pycache__/
 results/
 .ipynb_checkpoints/
 notebooks/*.slides.html
+
+# ---- F-1 統合教材（Phase 1 で追加）----
+# 教員用の完成解答（学生に配布しない。Git 管理外）
+solutions/
+*_solution.ipynb
+*_solutions.py
+# 学生配布物（scripts/build_student_package.py で作る予定）
+dist/
+# 公開統計の原データ・中間ファイル（docs/dataset_sources.md の手順で取得する）
+data/raw/
+data/interim/
+*.zip
