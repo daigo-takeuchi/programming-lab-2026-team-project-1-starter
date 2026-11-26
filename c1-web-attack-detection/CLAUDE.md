@@ -33,7 +33,11 @@
 - 各テーマの章は同じ 10 節（N.1〜N.10）と 5 STEP。STEP 1〜3 = Level 1（必須）、STEP 4 = Level 2、STEP 5 = Level 3。
 - Level 1 は 1 テーマ 3〜5 個の小さな TODO（1 関数 = 1 つの処理、数行〜15 行程度）。基本アルゴリズムも学生が実装する。
 - 各 TODO に：関数名・引数・戻り値・入出力形式・具体例・期待される出力・3 段階のヒント・動作確認方法。
-- **学生用 TODO の完成解答を Notebook やリポジトリに入れない。** 教員用解答は `solutions/`（Git 管理外）に置く。
+- **学生用 TODO の完成解答を Notebook やリポジトリに入れない。** 教員用の参照実装は `solutions/reference_solutions.py`（Git 管理外、全 33 関数）。検証は `scripts/run_reference_check.py`（配布用 Notebook のコピーに差し込んで実行。原本は書き換えない）。
+- Level 2 の課題には「改良の種類」（効率化：結果は同じ／検出方法の改良：結果が変わってよい）を明記する。
+- テーマ章は第3章の共通関数（3.7：`load_csv`・`show_records`・`check`、3.8：`measure_time`・`compare_speed`・`evaluate_detection`・`show_evaluation`・`plot_bars`・`plot_speed`・`jp`）だけに依存する。
+- `check` は `[OK]`・`[NG]`（入力と違いを表示）・`[未実装]`・`[エラー]`（場所を表示）を区別する。Tiny Dataset の期待値は `build_notebook.py` に直接書いてある（データを作り直したら見直す）。
+- Benchmark Dataset はファイルに保存せず、各章の教員提供セルでメモリ上に作る（シード固定）。
 - 未実装の関数は `raise NotImplementedError("学生実装課題")`。動作確認は共通関数 `check()` を使い、`NotImplementedError` だけを捕捉する（他の例外は隠さない）。
 - 各テーマの章は第0〜3章だけに依存する。他テーマの変数・関数・データファイルを使わない（`tests/test_notebook.py` で検査）。
 - セルの表示：【教員提供コード】【学生実装課題：Level 1】【学生実装課題：Level 2】【発展課題：Level 3】【動作確認】【ヒント】【考察課題】。
@@ -42,7 +46,7 @@
 ## Notebook の編集方法
 
 - Notebook は `scripts/build_notebook.py`（**教員用マスター**）から生成する。**ipynb を直接編集しない**（再生成で上書きされる）。
-- 配布後の Notebook は**学生が直接編集する成果物**。学生の Notebook に生成スクリプトで上書きしない（実行結果が残っている Notebook への上書きはスクリプトが拒否する）。`build_notebook.py` は学生に配布しない。
+- 配布後の Notebook は**学生が直接編集する成果物**。学生の Notebook に生成スクリプトで上書きしない。スクリプトは、実行結果がある Notebook と、生成時の指紋（`metadata.c1_generator.source_fingerprint`）と内容が違う Notebook への上書きを拒否する（`--force` で強制）。`build_notebook.py` は学生に配布しない。
 - セル ID は連番で固定している（再生成しても同じ内容になる。テストで確認）。
 - 変更後は必ず：`.venv/bin/python scripts/build_notebook.py` → `.venv/bin/python -m unittest discover -s tests -t .`
 - 出力（outputs）を含めずにコミットする（ビルドスクリプトは出力なしで書き出す）。
@@ -69,14 +73,14 @@
 ## ストレージ・依存関係
 
 - 次の作業は事前に教員の承認を得る：**100MB を超える新規データの取得**（Phase 2A 以降のルール）、PCAP の取得、大規模な依存パッケージの追加。
-- **Windows 側 C: ドライブの空きは 2.6GB**（2026-11-26）。WSL の仮想ディスクも C: 上にあるため、Linux 側の空き表示（926GB）は実際には使えない。展開時の一時ファイルを含めた最大使用量を考える。
+- **Windows 側 C: ドライブの空きは 2.3GB**（2026-11-27）。新しい仮想環境・ライブラリは原則として追加しない。WSL の仮想ディスクも C: 上にあるため、Linux 側の空き表示（926GB）は実際には使えない。展開時の一時ファイルを含めた最大使用量を考える。
 - CIC 系データのフォームの奥のディレクトリを直接たどるなど、アクセス制限を回避する操作はしない。
 - 開発用の Python 環境はこのディレクトリの `.venv/`（Git 管理外、`requirements-dev.txt`）。グローバル環境や他プロジェクトの仮想環境を変更しない。
 - CIC 系データのダウンロードには氏名・メールアドレス等の登録フォームがある。**Claude が教員の個人情報をフォームに送信しない。**教員が手動で行う。
 
 ## Git
 
-- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ（Phase 1 は `df5a1dc` でコミット済み）。
+- 作業ブランチ：`feature/c1-integrated-starter`。コミットは教員の指示があるときだけ（Phase 1：`df5a1dc`、Phase 1.5・2A：`6b2ff9d`。Phase 3・4 は未コミット）。
 - 承認なしに行わない：push、マージ、`reset --hard`、`git clean`、履歴の書き換え、force push、ブランチ・タグの削除、リモート設定・リポジトリ名・公開範囲の変更、外部リポジトリの作成。
 - 親リポジトリの `.gitignore` は `*.log` と `textbook/**/*.py` を除外している点に注意。
 

@@ -15,6 +15,8 @@
 """
 
 import argparse
+import hashlib
+import json
 
 import textwrap
 from pathlib import Path
@@ -78,10 +80,9 @@ md("""
 
 **C-1 Cybersecurity Programming Starter**（プログラミング演習Ⅰ チーム開発課題）
 
-> **この Notebook の状態（開発中の骨格版）**
-> 章の構成、データ、課題の設計、関数のひな形（TODO）、動作確認のしくみを用意しています。
-> 一部の教員提供コード（実行時間の比較、C-1A・C-1E の公開データなど）は、今後追加します。
-> 「追加予定」と書かれている部分は、まだ実行できなくても問題ありません。
+> **この Notebook について**
+> Level 1・Level 2 の課題、動作確認、実行時間の比較、グラフは、すべてこの Notebook と `data` フォルダだけで実行できます。
+> C-1A・C-1E の公開データ（Level 3 の一部）は準備中です。その部分は人工データで進めてください。
 
 **最初にすること：** 第0章の「0.5 学習ルート」を読み、自分のチームが実行する章を確認してください。
 """)
@@ -180,7 +181,7 @@ md("""
 | **【学生実装課題：Level 1】** | 基本課題です。`TODO` の部分を自分で書きます。 |
 | **【学生実装課題：Level 2】** | 改良課題です。 |
 | **【発展課題：Level 3】** | 発展課題です。チームで選んで取り組みます。 |
-| **【動作確認】** | 期待される結果と、実際の結果を比べます。 |
+| **【動作確認】** | 期待される結果と、実際の結果を比べます。`[OK]`・`[NG]`・`[未実装]`・`[エラー]` のどれかが表示されます（3.7 で説明します）。 |
 | **【ヒント】** | 考え方のヒントです。3 段階あるので、順番に開いてください。 |
 | **【考察課題】** | 結果について考え、文章で答えます。 |
 
@@ -469,13 +470,21 @@ md(f"""
 | --- | --- |
 | `load_csv(path, int_columns)` | CSV を読み込み、辞書のリストにする。`int_columns` に書いた列は整数に変換する |
 | `show_records(records, limit)` | 辞書のリストを表の形で表示する |
-| `check(label, func, args, expected)` | 関数を実行し、期待される結果と比べて [OK] / [NG] / [未実装] を表示する |
+| `check(label, func, args, expected)` | 関数を実行し、期待される結果と比べて結果を表示する |
 
-`check` は `NotImplementedError`（まだ実装していない）だけを特別に扱います。
-それ以外のエラーは、**バグを見つけるために、そのままエラーとして表示**します。
+`check` の表示は 4 種類です。
+
+| 表示 | 意味 | どうするか |
+| --- | --- | --- |
+| `[OK]` | 期待される結果と一致した | 次の課題へ進む |
+| `[未実装]` | `raise NotImplementedError` が残っている | 関数を実装する |
+| `[エラー]` | 関数の実行中にエラーが起きた（未実装ではない） | 表示された「場所」の行を見直す |
+| `[NG]` | 実行できたが、結果が期待と違う | 「違い」の説明を読んで、処理を見直す |
 """)
 code('''
-# 【教員提供コード】共通関数
+# 【教員提供コード】共通関数（データの読み込み・表示・動作確認）
+import traceback
+
 
 def load_csv(path, int_columns=()):
     """CSV ファイルを読み込み、1 行を 1 つの辞書にしたリストを返す。
@@ -515,22 +524,62 @@ def show_records(records, limit=10):
         print(f"... ほか {len(records) - limit} 件（全 {len(records)} 件）")
 
 
+def _short(value, width=70):
+    """値を短い文字列にする（長いリストは件数だけを表示する）"""
+    if isinstance(value, list) and len(value) > 5:
+        return f"リスト（{len(value)} 件）"
+    text = repr(value)
+    return text if len(text) <= width else text[:width] + "…"
+
+
+def _describe_difference(expected, actual):
+    """期待される結果と実際の結果の違いを、日本語で短く説明する"""
+    if type(expected) is not type(actual):
+        hint = "（return を書き忘れていませんか？）" if actual is None else ""
+        return f"型が違います：期待 {type(expected).__name__}、実際 {type(actual).__name__}{hint}"
+    if isinstance(expected, list):
+        if len(expected) != len(actual):
+            return f"要素の数が違います：期待 {len(expected)} 個、実際 {len(actual)} 個"
+        for i, (e, a) in enumerate(zip(expected, actual)):
+            if e != a:
+                return f"{i} 番目（0 から数える）の要素が違います：期待 {_short(e)}、実際 {_short(a)}"
+    if isinstance(expected, dict):
+        missing = [k for k in expected if k not in actual]
+        extra = [k for k in actual if k not in expected]
+        if missing:
+            return f"足りないキーがあります：{_short(missing)}"
+        if extra:
+            return f"余分なキーがあります：{_short(extra)}"
+        for k in expected:
+            if expected[k] != actual[k]:
+                return f"キー {k!r} の値が違います：期待 {_short(expected[k])}、実際 {_short(actual[k])}"
+    return "値が違います"
+
+
 def check(label, func, args, expected):
     """func(*args) の結果を expected と比べて表示する。
 
-    戻り値: 一致すれば True、違えば False、未実装なら None
+    戻り値: 一致すれば True、違えば（エラーを含む）False、未実装なら None
     """
     try:
         actual = func(*args)
     except NotImplementedError:
         print(f"[未実装] {label}：この課題はまだ実装されていません。")
         return None
+    except Exception as error:   # 未実装とは区別して、エラーの内容と場所を表示する（隠さない）
+        frame = traceback.extract_tb(error.__traceback__)[-1]
+        print(f"[エラー] {label}：実行中にエラーが起きました（未実装ではなく、実装の中に問題があります）。")
+        print(f"     {type(error).__name__}: {error}")
+        print(f"     場所: {frame.name}() の中の「{frame.line}」")
+        return False
     if actual == expected:
         print(f"[OK] {label}")
         return True
     print(f"[NG] {label}")
-    print(f"     期待される結果: {expected!r}")
-    print(f"     実際の結果    : {actual!r}")
+    print(f"     入力          : {', '.join(_short(a, 40) for a in args)}")
+    print(f"     期待される結果: {_short(expected, 200)}")
+    print(f"     実際の結果    : {_short(actual, 200)}")
+    print(f"     違い          : {_describe_difference(expected, actual)}")
     return False
 
 
@@ -544,10 +593,167 @@ def double(x):
 def not_yet(x):
     raise NotImplementedError("学生実装課題")
 
-check("2 倍にする", double, (3,), 6)        # [OK]
-check("わざと違う期待値", double, (3,), 7)  # [NG]
-check("まだ作っていない関数", not_yet, (3,), 6)  # [未実装]
+def broken(x):
+    return x * undefined_name   # わざとエラーを起こす
+
+check("2 倍にする", double, (3,), 6)              # [OK]
+check("わざと違う期待値", double, (3,), 7)        # [NG]
+check("まだ作っていない関数", not_yet, (3,), 6)    # [未実装]
+check("エラーが起きる関数", broken, (3,), 6)       # [エラー]
 ''')
+md(f"""
+## 3.8 評価とグラフの共通関数（Level 2・3 で使う）
+
+{TEACHER} Level 1 だけに取り組む場合は、実行するだけで大丈夫です（中身を理解する必要はありません）。
+
+| 関数 | 何をするか | 使う場所 |
+| --- | --- | --- |
+| `measure_time(func, args, repeat)` | `func(*args)` を何回か実行し、実行時間の**中央値**（秒）を返す | STEP 4、第9章 |
+| `compare_speed(baseline, improved, make_input, sizes)` | 基本版と改良版を**同じ入力**で動かし、結果が同じか確かめてから実行時間を比べる | STEP 4 |
+| `evaluate_detection(detected, actual, all_items)` | 検出結果を正解と比べ、正しく検出・見逃し・誤検出などを数える | STEP 3〜5、第9章 |
+| `plot_bars(names, values, title, ylabel)` | 棒グラフを表示する（matplotlib がなければ文字で表示） | STEP 3 |
+| `plot_speed(rows, title)` | データ件数と実行時間のグラフを表示する | STEP 4 |
+""")
+code('''
+# 【教員提供コード】評価とグラフの共通関数
+
+def measure_time(func, args, repeat=5):
+    """func(*args) を repeat 回実行し、実行時間の中央値（秒）を返す。"""
+    times = []
+    for _ in range(repeat):
+        start = time.perf_counter()
+        func(*args)
+        times.append(time.perf_counter() - start)
+    return statistics.median(times)
+
+
+def compare_speed(baseline, improved, make_input, sizes, same=None, repeat=3, time_limit=2.0):
+    """基本版と改良版を、同じ入力で実行時間を比べる。
+
+    引数:
+        baseline, improved: 比べる 2 つの関数
+        make_input: 件数 n を受け取り、関数に渡す引数のタプルを作る関数
+        sizes: 試すデータ件数のリスト
+        same: 2 つの結果が同じかを判定する関数（省略すると == で比べる）
+        time_limit: 基本版が 1 回でこの秒数を超えたら、それより大きい件数は試さない
+    戻り値:
+        [(件数, 基本版の秒, 改良版の秒), ...]
+    """
+    rows = []
+    for n in sizes:
+        args = make_input(n)                       # データの生成は計測に含めない
+        try:
+            result_base = baseline(*args)
+            result_improved = improved(*args)
+        except NotImplementedError:
+            print("[未実装] 基本版または改良版がまだ実装されていません。両方を実装してから実行してください。")
+            return rows
+        is_same = same(result_base, result_improved) if same else result_base == result_improved
+        if not is_same:
+            print(f"[NG] N = {n:,} のとき、基本版と改良版の結果が一致しません。速さを比べる前に、結果を一致させてください。")
+            return rows
+        t_base = measure_time(baseline, args, repeat)
+        t_improved = measure_time(improved, args, repeat)
+        rows.append((n, t_base, t_improved))
+        ratio = f"{t_base / t_improved:.1f}" if t_improved > 0 else "-"
+        print(f"N = {n:>7,}　基本版 {t_base:.5f} 秒　改良版 {t_improved:.5f} 秒　"
+              f"（基本版の時間 ÷ 改良版の時間 = {ratio}）")
+        if t_base > time_limit:
+            print("基本版に時間がかかるため、これより大きい件数は試しません。")
+            break
+    if rows:
+        print("結果は一致しました（[OK]）。時間はこのコンピュータでの実測値で、環境によって変わります。")
+    return rows
+
+
+def evaluate_detection(detected, actual_anomalies, all_items):
+    """検出結果を評価する。
+
+    引数:
+        detected: 検出したもの（通信元、ユーザーなど）の集まり
+        actual_anomalies: 実際に異常なものの集まり（正解ラベルから作る）
+        all_items: 評価の対象すべての集まり
+    戻り値:
+        TP, FP, FN, TN と各指標の辞書（0 で割る場合は None）
+    """
+    detected, actual, items = set(detected), set(actual_anomalies), set(all_items)
+    tp = len(detected & actual)
+    fp = len(detected - actual)
+    fn = len(actual - detected)
+    tn = len(items - detected - actual)
+
+    def ratio(a, b):
+        return a / b if b > 0 else None
+
+    precision = ratio(tp, tp + fp)
+    recall = ratio(tp, tp + fn)
+    f1 = None
+    if precision is not None and recall is not None and precision + recall > 0:
+        f1 = 2 * precision * recall / (precision + recall)
+    return {"TP": tp, "FP": fp, "FN": fn, "TN": tn,
+            "Accuracy": ratio(tp + tn, len(items)), "Precision": precision,
+            "Recall": recall, "F1": f1, "FPR": ratio(fp, fp + tn)}
+
+
+def show_evaluation(result, unit):
+    """evaluate_detection の結果を、日本語で分かりやすく表示する"""
+    print(f"評価の単位：{unit}")
+    print(f"  正しく検出できた異常（TP）           : {result['TP']}")
+    print(f"  見逃した異常（FN、検出漏れ）         : {result['FN']}")
+    print(f"  正常なのに検出したもの（FP、誤検出） : {result['FP']}")
+    print(f"  正しく正常と判定したもの（TN）       : {result['TN']}")
+    for key, name in [("Precision", "適合率"), ("Recall", "再現率")]:
+        value = result[key]
+        print(f"  {name}（{key}）: {'-' if value is None else f'{value:.2f}'}")
+
+
+def jp(japanese, english):
+    """日本語フォントがあれば日本語、なければ英語のラベルを返す（グラフ用）"""
+    return japanese if JAPANESE_FONT else english
+
+
+def plot_bars(names, values, title, ylabel, highlight=()):
+    """棒グラフを表示する。highlight に入っている名前の棒は色を変える。"""
+    if not HAS_MATPLOTLIB:
+        largest = max(values) if values else 1
+        print(title)
+        for name, value in zip(names, values):
+            mark = " ←" if name in highlight else ""
+            print(f"  {str(name):18s} {'#' * max(1, round(30 * value / largest)) if value else ''} {value:,}{mark}")
+        return
+    colors = ["tab:red" if name in highlight else "tab:blue" for name in names]
+    plt.figure(figsize=(7, 3.5))
+    plt.bar([str(n) for n in names], values, color=colors)
+    plt.title(title)
+    plt.ylabel(ylabel)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_speed(rows, title):
+    """compare_speed の結果を、データ件数と実行時間の折れ線グラフにする"""
+    if not rows:
+        return
+    if not HAS_MATPLOTLIB:
+        print("（matplotlib がないため、グラフの代わりに上の表で確認してください）")
+        return
+    ns = [r[0] for r in rows]
+    plt.figure(figsize=(6, 3.5))
+    plt.plot(ns, [r[1] for r in rows], marker="o", label=jp("基本版", "baseline"))
+    plt.plot(ns, [r[2] for r in rows], marker="s", label=jp("改良版", "improved"))
+    plt.xlabel(jp("データ件数 N", "number of records N"))
+    plt.ylabel(jp("実行時間（秒）", "time (s)"))
+    plt.title(title)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+
+print("評価とグラフの共通関数を定義しました")
+''')
+
 
 
 # ======================================================================
@@ -567,7 +773,8 @@ def theme_chapter(t):
     | Level 2（推奨） | {n}.8 | 辞書・集合などで改良する |
     | Level 3（選択） | {n}.9〜{n}.10 | 公開データ・発展課題・考察 |
     """)
-    md(f"## {n}.1 このテーマで何を解決するのか\n\n" + textwrap.dedent(t["problem"]).strip())
+    md(f"## {n}.1 このテーマで何を解決するのか\n\n" + textwrap.dedent(t["problem"]).strip()
+       + ("\n\n" + textwrap.dedent(t["goal"]).strip() if "goal" in t else ""))
     md(f"## {n}.2 社会的背景と必要な技術知識\n\n" + textwrap.dedent(t["background"]).strip())
     md(f"## {n}.3 学習目標と課題の全体像\n\n" + textwrap.dedent(t["overview"]).strip())
     md(f"## {n}.4 使用するデータ\n\n" + DATA_TABLE_HEAD + textwrap.dedent(t["data"]).strip())
@@ -607,6 +814,14 @@ def theme_chapter(t):
         emit_task(task, LEVEL1)
     md("### Tiny Dataset に適用する\n\n課題をすべて実装したら、Tiny Dataset でも試してみましょう。\n\n" + TEACHER)
     code(t["tiny_apply"])
+    if "tiny_check" in t:
+        md("### Tiny Dataset で確認する\n\n" + CHECK + "\n\n"
+           "Mini Dataset で `[OK]` になっても、もっと多いデータでは間違えることがあります。"
+           "Tiny Dataset（人工データ）でも確かめましょう。")
+        code(t["tiny_check"])
+    if "viz" in t:
+        md("### 結果をグラフで確認する\n\n" + TEACHER + " 自分の関数の結果をグラフにします（赤い棒が異常の候補）。")
+        code(t["viz"])
     md(f"{THINK}\n\n" + textwrap.dedent(t["step3_think"]).strip())
 
     # STEP 4
@@ -614,14 +829,19 @@ def theme_chapter(t):
        + textwrap.dedent(t["step4"]).strip())
     for task in t["step4_tasks"]:
         emit_task(task, LEVEL2)
-    md("### 実行時間の比較\n\n"
-       "> **Phase 4 で追加予定：** Benchmark Dataset を生成し、基本版と改良版の実行時間を"
-       "データ件数ごとに比べる教員提供コードを、ここに追加します。"
-       "それまでは、第9章の `measure_time` を使って自分で計測してもかまいません。")
+    if "l2_tiny_check" in t:
+        md("### Tiny Dataset で確認する（Level 2）\n\n" + CHECK)
+        code(t["l2_tiny_check"])
+    for extra_md, extra_code in t.get("step4_extra", []):
+        md(textwrap.dedent(extra_md).strip())
+        code(extra_code)
 
     # STEP 5
     md(f"## {n}.9 STEP 5：実データで評価・発展させる\n\n**対応レベル：Level 3（発展課題）**\n\n"
        + textwrap.dedent(t["step5"]).strip())
+    for extra_md, extra_code in t.get("evaluation", []):
+        md(textwrap.dedent(extra_md).strip())
+        code(extra_code)
     md(TEACHER)
     code(t["small_code"])
     for extra_md, extra_code in t.get("step5_extra", []):
@@ -2688,6 +2908,578 @@ C1E = {
     """,
 }
 
+# ======================================================================
+# Phase 3・4 で追加した内容（完成イメージ、Tiny での確認、グラフ、Level 2 のヒント、速度比較、評価）
+# Tiny Dataset の期待値は、scripts/generate_synthetic_data.py が作るデータの設計から決めたもの。
+# 教員用参照実装（solutions/、Git 管理外）で全件 [OK] になることを tests/test_reference_check.py で確認する。
+# ======================================================================
+KIND_EFFICIENCY = ("**改良の種類：効率化** ― 結果は基本版と**同じ**になります。"
+                   "同じ結果を、より少ない手間（計算量）で求めます。")
+KIND_DETECTION = ("**改良の種類：検出方法の改良** ― 判定のしかたを変えるので、結果は Level 1 と**違ってもかまいません**。"
+                  "結果が違うことは誤りではありません。何が見つかるようになったかを比べます。")
+
+
+def add_hints_and_kind(task, kind, h1, h2, h3):
+    task["explain"] = kind + "\n\n" + textwrap.dedent(task["explain"]).strip()
+    task["hints"] = (h1, h2, h3)
+
+
+def speed_section(intro, code_text):
+    return ("### 基本版と改良版の実行時間を比べる\n\n" + TEACHER + " 基本版と改良版の両方を実装した後に実行してください。\n\n"
+            + textwrap.dedent(intro).strip(), code_text)
+
+
+# ---------------------------------------------------------------- C-1A
+C1A["goal"] = """
+### 完成イメージ
+
+| 項目 | 内容 |
+| --- | --- |
+| 扱う問題 | ネットワーク探索（ポートスキャン）や、通信の集中 |
+| 入力 | 通信の記録のリスト（通信元、通信先、宛先ポート） |
+| 計算すること | 通信元ごとの通信回数（Level 1）、宛先ポートの種類数（Level 2） |
+| 出力 | 閾値以上の通信元（＝調べる必要がある候補）のリスト |
+| 学ぶ Python | for 文、if 文、リスト、タプル、関数、辞書、集合 |
+
+Level 1 を完成させると、Mini Dataset（9 件）から次のような結果が出せるようになります。
+
+```text
+通信元ごとの通信回数: PC-A 2 回、PC-B 1 回、PC-C 6 回
+閾値 3 回以上の通信元（調べる必要がある候補）: ['PC-C']
+```
+"""
+C1A["tiny_check"] = '''
+# 【動作確認】Tiny Dataset（人工データ 42 件）で Level 1 の関数を確かめる
+if network_tiny:
+    check("Tiny：192.0.2.16 のレコードの数", lambda r, s: len(filter_by_source(r, s)), (network_tiny, "192.0.2.16"), 10)
+    check("Tiny：192.0.2.15 の通信回数", count_connections, (network_tiny, "192.0.2.15"), 12)
+    check("Tiny：全通信元の集計", summarize_connections_baseline, (network_tiny,),
+          [("192.0.2.11", 4), ("192.0.2.14", 8), ("192.0.2.13", 5), ("192.0.2.12", 3),
+           ("192.0.2.15", 12), ("192.0.2.16", 10)])
+    check("Tiny：閾値 8 回以上（ちょうど 8 回の 192.0.2.14 も含む）", detect_high_frequency_sources,
+          ([("192.0.2.11", 4), ("192.0.2.14", 8), ("192.0.2.13", 5), ("192.0.2.12", 3),
+            ("192.0.2.15", 12), ("192.0.2.16", 10)], 8),
+          ["192.0.2.14", "192.0.2.15", "192.0.2.16"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1A["viz"] = '''
+# 【教員提供コード】通信元ごとの通信回数のグラフ（課題3・4 を使う）
+try:
+    viz_summary_c1a = summarize_connections_baseline(network_tiny)
+    viz_found_c1a = detect_high_frequency_sources(viz_summary_c1a, THRESHOLD_C1A)
+    plot_bars([s for s, c in viz_summary_c1a], [c for s, c in viz_summary_c1a],
+              jp(f"通信元ごとの通信回数（閾値 {THRESHOLD_C1A} 回）", f"Connections per source (threshold {THRESHOLD_C1A})"),
+              jp("通信回数", "connections"), highlight=viz_found_c1a)
+except NotImplementedError:
+    print("[未実装] 課題3・4 を実装した後に、もう一度実行してください。")
+'''
+add_hints_and_kind(C1A["step4_tasks"][0], KIND_EFFICIENCY,
+    "辞書に「通信元 → 回数」を記録しながら、データを先頭から 1 回だけ調べます。",
+    "`counts = {}`、`counts[src] = counts.get(src, 0) + 1`（`get` は、キーがなければ 0 を返します）",
+    """
+    counts ← 空の辞書
+    records の各 record について:
+        src ← record の "src_ip"
+        counts[src] ← （counts にある src の回数、なければ 0）+ 1
+    counts を返す
+    """)
+add_hints_and_kind(C1A["step4_tasks"][1], KIND_DETECTION,
+    "通信元ごとに「宛先ポートの集合」を作ります。集合は同じ値を 1 つしか持たないので、最後に大きさを数えれば種類数になります。",
+    "`ports[src] = set()` で空の集合、`ports[src].add(port)` で追加、`len(集合)` で種類数。辞書は `for src, count in d.items():` で 1 組ずつ取り出せます。",
+    """
+    ports ← 空の辞書
+    records の各 record について:
+        もし src が ports にないなら: ports[src] ← 空の集合
+        ports[src] に record の "dst_port" を追加
+    結果 ← 空の辞書
+    ports の各 (src, 集合) について: 結果[src] ← 集合の大きさ
+    結果を返す
+    """)
+C1A["l2_tiny_check"] = '''
+# 【動作確認】Tiny Dataset で Level 2 の関数を確かめる
+if network_tiny:
+    check("Tiny：辞書による集計", summarize_connections_optimized, (network_tiny,),
+          {"192.0.2.11": 4, "192.0.2.14": 8, "192.0.2.13": 5, "192.0.2.12": 3, "192.0.2.15": 12, "192.0.2.16": 10})
+    check("Tiny：宛先ポートの種類数", count_unique_ports, (network_tiny,),
+          {"192.0.2.11": 3, "192.0.2.14": 3, "192.0.2.13": 3, "192.0.2.12": 2, "192.0.2.15": 12, "192.0.2.16": 1})
+    check("Tiny：ポートスキャンの候補（10 種類以上）", detect_port_scan_candidates,
+          ({"192.0.2.11": 3, "192.0.2.14": 3, "192.0.2.13": 3, "192.0.2.12": 2, "192.0.2.15": 12, "192.0.2.16": 1}, 10),
+          ["192.0.2.15"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1A["step4_extra"] = [speed_section("""
+    人工データ（Benchmark Dataset）を**メモリの中で**作り、基本版（課題3）と改良版（改良課題A）を同じデータで比べます（ファイルは作りません）。
+    通信元の種類 K を 50 に固定し、データ件数 N だけを増やします。基本版はおよそ N × K 回、改良版はおよそ N 回の処理です。
+
+    **考えてみよう：** `n_sources` を 50 から 200 に変えると、基本版と改良版の時間はそれぞれどう変わるでしょうか？
+    """, '''
+# 【教員提供コード】基本版と改良版の実行時間の比較（C-1A）
+def make_network_benchmark(n, n_sources=50, seed=2026):
+    """通信の記録を n 件作る（通信元は n_sources 種類）。関数に渡す引数のタプルを返す。"""
+    rng = random.Random(seed)                 # 乱数のシードを固定して、毎回同じデータにする
+    sources = [f"PC-{i:03d}" for i in range(n_sources)]
+    records = [{"src_ip": rng.choice(sources), "dst_ip": "Server-1", "dst_port": rng.choice([22, 80, 443, 8080])}
+               for _ in range(n)]
+    return (records,)
+
+speed_rows_c1a = compare_speed(summarize_connections_baseline, summarize_connections_optimized,
+                               make_network_benchmark, [100, 1_000, 5_000, 10_000],
+                               same=lambda base, improved: dict(base) == improved)
+plot_speed(speed_rows_c1a, jp("C-1A 通信回数の集計（通信元 50 種類）", "C-1A counting (50 sources)"))
+''')]
+C1A["evaluation"] = [("""
+    ### 正解ラベルを使った評価（人工データ）
+
+    """ + TEACHER + """ Tiny Dataset は人工データなので、`label` 列に「教材として意図した答え」があります。
+    **`label` は検出には使わず、検出が終わった後の答え合わせだけに使います。** 評価の単位は「通信元」です。
+    （人工データでの評価なので、実際のネットワークでも同じ結果になるとは限りません。）
+    """, '''
+# 【教員提供コード】通信元ごとの評価（課題3・4、改良課題B を使う）
+eval_sources_c1a = {r["src_ip"] for r in network_tiny}
+eval_actual_c1a = {r["src_ip"] for r in network_tiny if r["label"] != "benign"}   # 答え合わせ用
+try:
+    found_by_count = detect_high_frequency_sources(summarize_connections_baseline(network_tiny), THRESHOLD_C1A)
+    show_evaluation(evaluate_detection(found_by_count, eval_actual_c1a, eval_sources_c1a), "通信元（Level 1：通信回数）")
+    found_by_ports = detect_port_scan_candidates(count_unique_ports(network_tiny), 10)
+    eval_scan_c1a = {r["src_ip"] for r in network_tiny if r["label"] == "portscan"}
+    show_evaluation(evaluate_detection(found_by_ports, eval_scan_c1a, eval_sources_c1a), "通信元（Level 2：ポートの種類数で、ポートスキャンだけを答えとする）")
+except NotImplementedError:
+    print("[未実装] 必要な関数を実装した後に、もう一度実行してください。")
+''')]
+
+# ---------------------------------------------------------------- C-1B
+C1B["goal"] = """
+### 完成イメージ
+
+| 項目 | 内容 |
+| --- | --- |
+| 扱う問題 | パスワードの総当たりなど、不正ログインの試み |
+| 入力 | 認証ログのリスト（ユーザー、認証結果） |
+| 計算すること | ユーザーごとの認証失敗回数（Level 1）、接続元ごとの失敗回数と対象ユーザー数（Level 2） |
+| 出力 | 失敗回数が閾値以上のユーザー（＝調べる必要がある候補）のリスト |
+| 学ぶ Python | for 文、if 文、`and`、リスト、タプル、関数、辞書、入れ子の辞書、集合 |
+
+Level 1 を完成させると、Mini Dataset（8 件）から次のような結果が出せるようになります。
+
+```text
+ユーザーごとの失敗回数: user01 0 回、user02 3 回、user03 1 回、user04 0 回
+失敗 3 回以上のユーザー（調べる必要がある候補）: ['user02']
+```
+"""
+C1B["tiny_check"] = '''
+# 【動作確認】Tiny Dataset（人工データ 32 件）で Level 1 の関数を確かめる
+if auth_tiny:
+    check("Tiny：認証失敗のレコードの数", lambda r: len(filter_failed_logins(r)), (auth_tiny,), 19)
+    check("Tiny：user04 の失敗回数", count_failed_logins, (auth_tiny, "user04"), 8)
+    check("Tiny：全ユーザーの集計", summarize_failures_baseline, (auth_tiny,),
+          [("user05", 3), ("user03", 1), ("user06", 1), ("user01", 1), ("user02", 2), ("user04", 8),
+           ("user07", 1), ("user08", 1), ("admin", 1)])
+    check("Tiny：失敗 3 回以上（ちょうど 3 回の user05 も含む）", detect_suspicious_users,
+          ([("user05", 3), ("user03", 1), ("user06", 1), ("user01", 1), ("user02", 2), ("user04", 8),
+            ("user07", 1), ("user08", 1), ("admin", 1)], 3),
+          ["user05", "user04"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1B["viz"] = '''
+# 【教員提供コード】ユーザーごとの認証失敗回数のグラフ（課題3・4 を使う）
+try:
+    viz_summary_c1b = summarize_failures_baseline(auth_tiny)
+    viz_found_c1b = detect_suspicious_users(viz_summary_c1b, THRESHOLD_C1B)
+    plot_bars([u for u, c in viz_summary_c1b], [c for u, c in viz_summary_c1b],
+              jp(f"ユーザーごとの認証失敗回数（閾値 {THRESHOLD_C1B} 回）", f"Failed logins per user (threshold {THRESHOLD_C1B})"),
+              jp("失敗回数", "failures"), highlight=viz_found_c1b)
+except NotImplementedError:
+    print("[未実装] 課題3・4 を実装した後に、もう一度実行してください。")
+'''
+add_hints_and_kind(C1B["step4_tasks"][0], KIND_EFFICIENCY + "（`summarize_auth_results` は、成功回数も数えるように集計を広げる課題です。）",
+    "辞書に「ユーザー → 失敗回数」を記録しながら、データを 1 回だけ調べます。失敗 0 回のユーザーも辞書に入れるので、まずユーザーを 0 で登録します。",
+    "`if user not in failures: failures[user] = 0`。成功・失敗の両方を数えるときは、値を辞書にします：`{\"success\": 0, \"failure\": 0}`。`results[user][record[\"result\"]] += 1` と書けます。",
+    """
+    failures ← 空の辞書
+    records の各 record について:
+        user ← record の "user_id"
+        もし user が failures にないなら: failures[user] ← 0
+        もし record の "result" が "failure" なら: failures[user] を 1 増やす
+    failures を返す
+    """)
+add_hints_and_kind(C1B["step4_tasks"][1], KIND_DETECTION,
+    "集計の「切り口」をユーザーから接続元に変えます。失敗のレコードだけを見て、接続元ごとに回数とユーザーの集合を作ります。",
+    "`continue` で成功のレコードを飛ばせます。ユーザーの種類数は、接続元ごとの集合（`set()`）に `add` して `len` で数えます。",
+    """
+    failures ← 空の辞書、users ← 空の辞書
+    records の各 record について:
+        もし result が "failure" でないなら: 次へ
+        src ← record の "src_host"
+        failures[src] を 1 増やす（なければ 0 から）
+        users[src] の集合に user_id を追加（なければ空の集合を作る）
+    各 src について {"failures": failures[src], "users": users[src] の大きさ} をまとめて返す
+    """)
+C1B["l2_tiny_check"] = '''
+# 【動作確認】Tiny Dataset で Level 2 の関数を確かめる
+if auth_tiny:
+    check("Tiny：辞書による失敗回数の集計", summarize_failures_optimized, (auth_tiny,),
+          {"user05": 3, "user03": 1, "user06": 1, "user01": 1, "user02": 2, "user04": 8,
+           "user07": 1, "user08": 1, "admin": 1})
+    check("Tiny：user04 の成功・失敗回数", lambda r: summarize_auth_results(r)["user04"], (auth_tiny,),
+          {"success": 1, "failure": 8})
+    check("Tiny：接続元別の集計", summarize_failures_by_source, (auth_tiny,),
+          {"192.0.2.25": {"failures": 2, "users": 1}, "192.0.2.22": {"failures": 1, "users": 1},
+           "203.0.113.50": {"failures": 8, "users": 1}, "203.0.113.77": {"failures": 8, "users": 8}})
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1B["step4_extra"] = [speed_section("""
+    人工データをメモリの中で作り、基本版（課題3）と改良版（`summarize_failures_optimized`）を同じデータで比べます。
+    ユーザーの種類 K を 50 に固定し、データ件数 N だけを増やします。
+    """, '''
+# 【教員提供コード】基本版と改良版の実行時間の比較（C-1B）
+def make_auth_benchmark(n, n_users=50, seed=2026):
+    """認証ログを n 件作る（ユーザーは n_users 人、失敗は約 10%）。関数に渡す引数のタプルを返す。"""
+    rng = random.Random(seed)
+    users = [f"user{i:03d}" for i in range(n_users)]
+    records = [{"user_id": rng.choice(users), "result": "failure" if rng.random() < 0.1 else "success"}
+               for _ in range(n)]
+    return (records,)
+
+speed_rows_c1b = compare_speed(summarize_failures_baseline, summarize_failures_optimized,
+                               make_auth_benchmark, [100, 1_000, 5_000, 10_000],
+                               same=lambda base, improved: dict(base) == improved)
+plot_speed(speed_rows_c1b, jp("C-1B 失敗回数の集計（ユーザー 50 人）", "C-1B failure counting (50 users)"))
+''')]
+C1B["evaluation"] = [("""
+    ### 正解ラベルを使った評価（人工データ）
+
+    """ + TEACHER + """ Tiny Dataset の `label` を答え合わせだけに使います。評価の単位は「**接続元**」です。
+    ユーザー別の集計（Level 1）では、パスワードスプレーで 1 回ずつ失敗したユーザーは目立ちません。
+    接続元別の集計（Level 2）にすると、何が見つかるようになるでしょうか。
+    """, '''
+# 【教員提供コード】接続元ごとの評価（改良課題B を使う）
+eval_sources_c1b = {r["src_host"] for r in auth_tiny}
+eval_actual_c1b = {r["src_host"] for r in auth_tiny if r["label"] != "benign"}   # 答え合わせ用
+try:
+    by_source = summarize_failures_by_source(auth_tiny)
+    found_sources = [src for src, v in by_source.items() if v["failures"] >= THRESHOLD_C1B]
+    print("失敗 3 回以上の接続元:", found_sources)
+    show_evaluation(evaluate_detection(found_sources, eval_actual_c1b, eval_sources_c1b), "接続元（Level 2：接続元別の失敗回数）")
+except NotImplementedError:
+    print("[未実装] 改良課題B を実装した後に、もう一度実行してください。")
+''')]
+
+# ---------------------------------------------------------------- C-1C
+C1C["goal"] = """
+### 完成イメージ
+
+| 項目 | 内容 |
+| --- | --- |
+| 扱う問題 | Web サイトへの不審なリクエスト（攻撃に使われやすい文字列、長すぎる入力） |
+| 入力 | HTTP リクエストのリスト（メソッド、URL） |
+| 計算すること | URL の長さ、注意する文字列を含むかどうか（Level 1）、ルールの点数の合計（Level 2） |
+| 出力 | 不審なリクエストの候補（URL）のリスト |
+| 学ぶ Python | 文字列、`len`、`in`、for 文、`or`、早期 `return`、関数、タプルのリスト、`lower()` |
+
+Level 1 を完成させると、Mini Dataset（8 件）から次のような結果が出せるようになります。
+
+```text
+不審なリクエストの候補（長さ 100 文字超、または ' か <script を含む）: 3 件
+  /search?q=aaaaaaaaaa…（210 文字）
+  /products?id=1' OR '1'='1
+  /search?q=<script>alert(1)</script>
+```
+"""
+C1C["tiny_check"] = '''
+# 【動作確認】Tiny Dataset（人工データ 32 件）で Level 1 の関数を確かめる
+# 期待値は「何件目か」で示しています（0 から数えます）。
+if http_tiny:
+    check("Tiny：長い URL の文字数", get_url_length, (http_tiny[15]["url"],), 230)
+    check("Tiny：100 文字より長い URL", detect_long_urls, (http_tiny, 100),
+          [http_tiny[15]["url"], http_tiny[17]["url"]])
+    check("Tiny：UNION SELECT は、この 3 つのパターンでは見つからない", contains_any_pattern,
+          (http_tiny[9]["url"], ["'", "<script", "../"]), False)
+    check("Tiny：不審なリクエストの候補", detect_suspicious_requests, (http_tiny, 100, ["'", "<script", "../"]),
+          [http_tiny[i]["url"] for i in (8, 10, 11, 13, 15, 17, 29)])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1C["viz"] = '''
+# 【教員提供コード】判定ルールごとの検出件数（課題1・3 を使う）
+try:
+    rule_names, rule_counts = [], []
+    for pattern in PATTERNS_C1C:
+        rule_names.append(pattern)
+        rule_counts.append(sum(1 for r in http_tiny if contains_any_pattern(r["url"], [pattern])))
+    rule_names.append(jp(f"長さ>{MAX_LENGTH_C1C}", f"len>{MAX_LENGTH_C1C}"))
+    rule_counts.append(sum(1 for r in http_tiny if get_url_length(r["url"]) > MAX_LENGTH_C1C))
+    plot_bars(rule_names, rule_counts, jp("判定ルールごとの検出件数（Tiny Dataset）", "Requests matched by each rule"),
+              jp("件数", "requests"))
+except NotImplementedError:
+    print("[未実装] 課題1・3 を実装した後に、もう一度実行してください。")
+'''
+add_hints_and_kind(C1C["step4_tasks"][0], KIND_DETECTION,
+    "ルールを 1 つずつ調べ、URL に含まれていたらその点数を足します。大文字・小文字をそろえてから比べます。",
+    "`url.lower()` で小文字にできます。`for pattern, points in rules:` でタプルを 2 つの変数に分けられます。`detect_by_score` は、課題2 と同じ「条件に合うものを集める」形です。",
+    """
+    lower_url ← url を小文字にしたもの
+    score ← 0
+    rules の各 (pattern, points) について:
+        もし pattern を小文字にしたものが lower_url に含まれるなら: score に points を足す
+    score を返す
+    """)
+C1C["l2_tiny_check"] = '''
+# 【動作確認】Tiny Dataset で Level 2 の関数を確かめる
+rules_c1c = [("'", 2), ("<script", 3), ("union", 3), ("../", 3)]
+if http_tiny:
+    check("Tiny：UNION SELECT のスコア（大文字でも見つかる）", calculate_risk_score, (http_tiny[9]["url"], rules_c1c), 3)
+    check("Tiny：スコア 2 以上のリクエスト", detect_by_score, (http_tiny, rules_c1c, 2),
+          [http_tiny[i]["url"] for i in (8, 9, 10, 11, 13, 29)])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1C["step4_extra"] = [("""
+    ### Level 1 と Level 2 の検出結果を比べる
+
+    """ + TEACHER + """ C-1C の改良は「速さ」ではなく「**何を見つけられるか**」の改良です。
+    そのため、実行時間ではなく、`label` 列（人工データの答え）を使って検出結果を比べます。評価の単位は「リクエスト 1 件」です。
+    （`label` は検出には使わず、答え合わせだけに使います。）
+
+    **考えてみよう：** Level 2 で新しく見つかったものと、見つからなくなったものは何ですか？
+    2 つの方法を組み合わせる（例：長さのルールにも点数を付ける）と、結果はどう変わるでしょうか。
+    """, '''
+# 【教員提供コード】2 つの検出方法の比較（課題4 と改良課題A を使う）
+eval_urls_c1c = [r["url"] for r in http_tiny]
+eval_actual_c1c = [r["url"] for r in http_tiny if r["label"] != "benign"]   # 答え合わせ用
+try:
+    found_rule = detect_suspicious_requests(http_tiny, MAX_LENGTH_C1C, PATTERNS_C1C)
+    found_score = detect_by_score(http_tiny, rules_c1c, 2)
+    result_rule = evaluate_detection(found_rule, eval_actual_c1c, eval_urls_c1c)
+    result_score = evaluate_detection(found_score, eval_actual_c1c, eval_urls_c1c)
+    show_evaluation(result_rule, "リクエスト（Level 1：長さ＋文字列のルール）")
+    show_evaluation(result_score, "リクエスト（Level 2：スコア 2 以上）")
+    print("Level 2 だけが見つけたもの:", [u[:40] for u in found_score if u not in found_rule])
+    print("Level 1 だけが見つけたもの:", [u[:40] for u in found_rule if u not in found_score])
+    plot_bars([jp("Level 1 正しく検出", "L1 TP"), jp("Level 1 誤検出", "L1 FP"),
+               jp("Level 2 正しく検出", "L2 TP"), jp("Level 2 誤検出", "L2 FP")],
+              [result_rule["TP"], result_rule["FP"], result_score["TP"], result_score["FP"]],
+              jp("検出方法による違い（Tiny Dataset）", "Detection results by method"), jp("件数", "requests"))
+except NotImplementedError:
+    print("[未実装] 課題4 と改良課題A を実装した後に、もう一度実行してください。")
+''')]
+
+# ---------------------------------------------------------------- C-1D
+C1D["goal"] = """
+### 完成イメージ
+
+| 項目 | 内容 |
+| --- | --- |
+| 扱う問題 | 不正な操作によるファイルの追加・削除・書き換え（ランサムウェアの兆候など） |
+| 入力 | 変更前と変更後のファイル一覧（ファイル名、疑似ハッシュ値） |
+| 計算すること | 追加・削除・両方にあるファイル（Level 1）、中身が変わったファイル（Level 2） |
+| 出力 | 変化したファイルの一覧（＝調べる必要がある候補） |
+| 学ぶ Python | 線形探索、早期 `return`、`not`、リスト、辞書、集合 |
+
+Level 1 を完成させると、Mini Dataset から次のような結果が出せるようになります。
+
+```text
+追加されたファイル: ['unknown.txt']
+削除されたファイル: ['users.txt']
+両方にあるファイル: ['config.txt', 'report.txt']（中身が変わったかは Level 2 で調べる）
+```
+"""
+C1D["tiny_check"] = '''
+# 【動作確認】Tiny Dataset（人工データ 12 + 13 ファイル）で Level 1 の関数を確かめる
+if files_before_tiny and files_after_tiny:
+    check("Tiny：変更前に users.csv がある", file_exists, (files_before_tiny, "users.csv"), True)
+    check("Tiny：変更後に users.csv はない", file_exists, (files_after_tiny, "users.csv"), False)
+    check("Tiny：追加されたファイル", find_added_files, (files_before_tiny, files_after_tiny),
+          ["photo_001.jpg.locked", "photo_002.jpg.locked", "unknown_tool.exe", "README_RESTORE.txt"])
+    check("Tiny：削除されたファイル", find_deleted_files, (files_before_tiny, files_after_tiny),
+          ["users.csv", "photo_001.jpg", "photo_002.jpg"])
+    check("Tiny：差分のまとめ", lambda b, a: compare_file_lists_baseline(b, a)["kept"],
+          (files_before_tiny, files_after_tiny),
+          ["config.ini", "report_2026_10.docx", "report_2026_11.docx", "budget.xlsx", "memo.txt",
+           "schedule.txt", "app.log", "readme.txt", "hosts.txt"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1D["viz"] = '''
+# 【教員提供コード】追加・削除・両方にあるファイルの数（課題4 を使う）
+try:
+    viz_diff_c1d = compare_file_lists_baseline(files_before_tiny, files_after_tiny)
+    plot_bars([jp("追加", "added"), jp("削除", "deleted"), jp("両方にある", "kept")],
+              [len(viz_diff_c1d["added"]), len(viz_diff_c1d["deleted"]), len(viz_diff_c1d["kept"])],
+              jp("ファイルの変化（Tiny Dataset）", "File changes (Tiny Dataset)"), jp("ファイル数", "files"),
+              highlight=[jp("追加", "added"), jp("削除", "deleted")])
+except NotImplementedError:
+    print("[未実装] 課題1〜4 を実装した後に、もう一度実行してください。")
+'''
+add_hints_and_kind(C1D["step4_tasks"][0], KIND_EFFICIENCY,
+    "変更前の一覧を、先に集合に変換しておきます。集合は「含まれているか」をすぐに調べられます。",
+    "`before_set = set(before)`、`if name not in before_set:`。結果は after の順序のままにするので、for 文は after について回します。",
+    """
+    before_set ← before を集合にしたもの
+    結果 ← 空のリスト
+    after の各 name について:
+        もし name が before_set にないなら: 結果に name を追加
+    結果を返す
+    """)
+add_hints_and_kind(C1D["step4_tasks"][1], KIND_DETECTION + "（ファイル名の比較 → ハッシュ値の比較）",
+    "まず「ファイル名 → ハッシュ値」の辞書を作ります。変更後の各ファイルについて、変更前にもあり、ハッシュ値が違うものを集めます。",
+    "`table[row[\"file_id\"]] = row[\"hash\"]` で辞書を作れます。「両方にある、かつ値が違う」は `if name in before_hashes and before_hashes[name] != row[\"hash\"]:`",
+    """
+    before_hashes ← build_hash_table(states_before)
+    結果 ← 空のリスト
+    states_after の各 row について:
+        name ← row の "file_id"
+        もし name が before_hashes にあり、かつハッシュ値が違うなら: 結果に name を追加
+    結果を返す
+    """)
+C1D["l2_tiny_check"] = '''
+# 【動作確認】Tiny Dataset で Level 2 の関数を確かめる
+if file_states_before_tiny and file_states_after_tiny:
+    check("Tiny：集合による追加ファイルの検出", find_added_files_optimized, (files_before_tiny, files_after_tiny),
+          ["photo_001.jpg.locked", "photo_002.jpg.locked", "unknown_tool.exe", "README_RESTORE.txt"])
+    check("Tiny：ハッシュ値の辞書（config.ini）", lambda s: build_hash_table(s)["config.ini"], (file_states_before_tiny,), "H001")
+    check("Tiny：中身が変わったファイル", find_modified_files, (file_states_before_tiny, file_states_after_tiny),
+          ["config.ini", "app.log", "hosts.txt"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1D["step4_extra"] = [("""
+    ### 名前が同じ ≠ 中身が同じ
+
+    """ + TEACHER + """ Level 1 の「両方にあるファイル」のうち、何個の中身が書き換えられていたかを確かめます。
+    """, '''
+# 【教員提供コード】ファイルの変化のまとめ（課題4 と改良課題B を使う）
+try:
+    summary_diff_c1d = compare_file_lists_baseline(files_before_tiny, files_after_tiny)
+    modified_c1d = find_modified_files(file_states_before_tiny, file_states_after_tiny)
+    print("両方にあるファイル:", len(summary_diff_c1d["kept"]), "個")
+    print("そのうち中身が変わったファイル:", modified_c1d)
+    plot_bars([jp("追加", "added"), jp("削除", "deleted"), jp("中身が変化", "modified"), jp("変化なし", "unchanged")],
+              [len(summary_diff_c1d["added"]), len(summary_diff_c1d["deleted"]), len(modified_c1d),
+               len(summary_diff_c1d["kept"]) - len(modified_c1d)],
+              jp("ファイルの変化（ハッシュ値で比較）", "File changes (with hashes)"), jp("ファイル数", "files"),
+              highlight=[jp("追加", "added"), jp("削除", "deleted"), jp("中身が変化", "modified")])
+except NotImplementedError:
+    print("[未実装] 課題4 と改良課題B を実装した後に、もう一度実行してください。")
+'''), speed_section("""
+    ファイル一覧をメモリの中で作り、基本版（課題2：リストの線形探索）と改良版（改良課題A：集合）を同じデータで比べます。
+    基本版は「変更後の各ファイル × 変更前の一覧」を調べるので、およそ N × N 回です。**件数が増えると急に遅くなる**ため、件数は小さめにしています。
+    """, '''
+# 【教員提供コード】基本版と改良版の実行時間の比較（C-1D）
+def make_file_benchmark(n):
+    """変更前 n ファイル、変更後は 1 割を削除・1 割を追加した一覧を作る。関数に渡す引数のタプルを返す。"""
+    before = [f"file_{i:05d}.txt" for i in range(n)]
+    after = [name for i, name in enumerate(before) if i % 10 != 0] + [f"new_{i:05d}.txt" for i in range(n // 10)]
+    return (before, after)
+
+speed_rows_c1d = compare_speed(find_added_files, find_added_files_optimized,
+                               make_file_benchmark, [100, 500, 1_000, 2_000])
+plot_speed(speed_rows_c1d, jp("C-1D 追加ファイルの検出（リストと集合）", "C-1D added files (list vs set)"))
+''')]
+
+# ---------------------------------------------------------------- C-1E
+C1E["goal"] = """
+### 完成イメージ
+
+| 項目 | 内容 |
+| --- | --- |
+| 扱う問題 | 情報の持ち出しにつながるおそれのある、異常に大量のデータ送信 |
+| 入力 | データ転送の記録のリスト（通信元、通信先、バイト数） |
+| 計算すること | 通信元ごとの送信量の合計（Level 1）、通信先ごとの受信量の合計（Level 2） |
+| 出力 | 送信量が閾値以上の通信元（＝調べる必要がある候補）のリスト |
+| 学ぶ Python | for 文、if 文、合計（`+=`）、リスト、タプル、関数、辞書 |
+
+Level 1 を完成させると、Mini Dataset（6 件）から次のような結果が出せるようになります。
+
+```text
+通信元ごとの送信量: PC-A 2,500 バイト、PC-B 2,500 バイト、PC-C 130,000 バイト
+100,000 バイト以上の通信元（調べる必要がある候補）: ['PC-C']
+```
+"""
+C1E["tiny_check"] = '''
+# 【動作確認】Tiny Dataset（人工データ 36 件）で Level 1 の関数を確かめる
+if transfer_tiny:
+    check("Tiny：192.0.2.43 のレコードの数", lambda r, h: len(filter_transfers_by_source(r, h)), (transfer_tiny, "192.0.2.43"), 12)
+    check("Tiny：192.0.2.43 の送信量", sum_transfer_bytes, (transfer_tiny, "192.0.2.43"), 3380387)
+    check("Tiny：全通信元の集計", summarize_transfer_baseline, (transfer_tiny,),
+          [("192.0.2.41", 138426), ("192.0.2.43", 3380387), ("192.0.2.42", 59983),
+           ("192.0.2.44", 2801426), ("192.0.2.45", 74485)])
+    check("Tiny：1,000,000 バイト以上", detect_large_transfers,
+          ([("192.0.2.41", 138426), ("192.0.2.43", 3380387), ("192.0.2.42", 59983),
+            ("192.0.2.44", 2801426), ("192.0.2.45", 74485)], 1_000_000),
+          ["192.0.2.43", "192.0.2.44"])
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1E["viz"] = '''
+# 【教員提供コード】通信元ごとの送信量のグラフ（課題3・4 を使う）
+try:
+    viz_summary_c1e = summarize_transfer_baseline(transfer_tiny)
+    viz_found_c1e = detect_large_transfers(viz_summary_c1e, THRESHOLD_C1E)
+    plot_bars([h for h, b in viz_summary_c1e], [b for h, b in viz_summary_c1e],
+              jp(f"通信元ごとの送信量（閾値 {THRESHOLD_C1E:,} バイト）", f"Bytes sent per source (threshold {THRESHOLD_C1E:,})"),
+              jp("バイト数", "bytes"), highlight=viz_found_c1e)
+except NotImplementedError:
+    print("[未実装] 課題3・4 を実装した後に、もう一度実行してください。")
+'''
+add_hints_and_kind(C1E["step4_tasks"][0], KIND_EFFICIENCY + "（`summarize_by_destination` は、集計の切り口を通信先に変える課題です。）",
+    "辞書に「通信元 → 合計バイト数」を記録しながら、データを 1 回だけ調べます。通信先別も、キーを変えるだけで同じ形です。",
+    "`totals[host] = totals.get(host, 0) + record[\"byte_count\"]`",
+    """
+    totals ← 空の辞書
+    records の各 record について:
+        host ← record の "src_host"（通信先別なら "dst_host"）
+        totals[host] ← （totals にある host の合計、なければ 0）+ record の "byte_count"
+    totals を返す
+    """)
+C1E["l2_tiny_check"] = '''
+# 【動作確認】Tiny Dataset で Level 2 の関数を確かめる
+if transfer_tiny:
+    check("Tiny：辞書による集計", summarize_transfer_optimized, (transfer_tiny,),
+          {"192.0.2.41": 138426, "192.0.2.43": 3380387, "192.0.2.42": 59983, "192.0.2.44": 2801426, "192.0.2.45": 74485})
+    check("Tiny：通信先別の集計", summarize_by_destination, (transfer_tiny,),
+          {"198.51.100.20": 230697, "198.51.100.10": 229350, "203.0.113.200": 3294660, "198.51.100.90": 2700000})
+else:
+    print("Tiny Dataset がないため、確認できません。")
+'''
+C1E["step4_extra"] = [speed_section("""
+    人工データをメモリの中で作り、基本版（課題3）と改良版（改良課題A）を同じデータで比べます。
+    通信元の種類 K を 50 に固定し、データ件数 N だけを増やします。
+    """, '''
+# 【教員提供コード】基本版と改良版の実行時間の比較（C-1E）
+def make_transfer_benchmark(n, n_hosts=50, seed=2026):
+    """データ転送の記録を n 件作る（通信元は n_hosts 種類）。関数に渡す引数のタプルを返す。"""
+    rng = random.Random(seed)
+    hosts = [f"PC-{i:03d}" for i in range(n_hosts)]
+    records = [{"src_host": rng.choice(hosts), "dst_host": "Server-1", "byte_count": rng.randint(100, 50_000)}
+               for _ in range(n)]
+    return (records,)
+
+speed_rows_c1e = compare_speed(summarize_transfer_baseline, summarize_transfer_optimized,
+                               make_transfer_benchmark, [100, 1_000, 5_000, 10_000],
+                               same=lambda base, improved: dict(base) == improved)
+plot_speed(speed_rows_c1e, jp("C-1E 送信量の集計（通信元 50 種類）", "C-1E byte totals (50 sources)"))
+''')]
+C1E["evaluation"] = [("""
+    ### 正解ラベルを使った評価（人工データ）
+
+    """ + TEACHER + """ Tiny Dataset の `label` を答え合わせだけに使います。評価の単位は「通信元」です。
+    **送信量が多いこと ＝ 情報流出、ではありません。** 誤検出（FP）になった通信元が何をしていたか、`dst_host` を見て考えましょう。
+    """, '''
+# 【教員提供コード】通信元ごとの評価（課題3・4 を使う）
+eval_hosts_c1e = {r["src_host"] for r in transfer_tiny}
+eval_actual_c1e = {r["src_host"] for r in transfer_tiny if r["label"] != "benign"}   # 答え合わせ用
+try:
+    found_c1e = detect_large_transfers(summarize_transfer_baseline(transfer_tiny), THRESHOLD_C1E)
+    show_evaluation(evaluate_detection(found_c1e, eval_actual_c1e, eval_hosts_c1e), "通信元（Level 1：送信量の合計）")
+except NotImplementedError:
+    print("[未実装] 課題3・4 を実装した後に、もう一度実行してください。")
+''')]
+
+
 for theme in (C1A, C1B, C1C, C1D, C1E):
     theme_chapter(theme)
 
@@ -2724,21 +3516,12 @@ md("""
 
 {TEACHER}
 
-`measure_time(func, args, repeat)` は、`func(*args)` を `repeat` 回実行し、実行時間の**中央値**（秒）を返します。
+第3章 3.8 の `measure_time(func, args, repeat)` は、`func(*args)` を `repeat` 回実行し、実行時間の**中央値**（秒）を返します。
 データの生成や読み込みの時間は含めず、**アルゴリズムの実行時間だけ**を測ります。
+各テーマの STEP 4 では、`compare_speed` で基本版と改良版を比べます。ここでは、セキュリティとは関係のない例で計測の考え方を確認します。
 """.replace("{TEACHER}", TEACHER))
 code('''
-# 【教員提供コード】実行時間の計測
-def measure_time(func, args, repeat=5):
-    """func(*args) を repeat 回実行し、実行時間の中央値（秒）を返す。"""
-    times = []
-    for _ in range(repeat):
-        start = time.perf_counter()
-        func(*args)
-        times.append(time.perf_counter() - start)
-    return statistics.median(times)
-
-
+# 【教員提供コード】実行時間の計測の例（measure_time は第3章 3.8 で定義済み）
 # 使い方の例（セキュリティとは関係のない例）：リストと集合で「含まれているか」を調べる速さを比べる
 def count_hits(container, queries):
     hits = 0
@@ -2763,28 +3546,12 @@ md("""
 ## 9.4 グラフによる結果の表示
 
 グラフにすると、データが増えたときの時間の増え方が分かりやすくなります。
-（matplotlib がない環境では、このセルは何もしません。）
+（matplotlib がない環境では、上の表で確認してください。）
 """)
 md(TEACHER)
 code('''
-# 【教員提供コード】データ件数と実行時間のグラフ
-if HAS_MATPLOTLIB:
-    ns = [row[0] for row in timing_rows]
-    if JAPANESE_FONT:
-        labels = ("リスト（線形探索）", "集合", "データ件数 N", "実行時間（秒）", "データ件数と実行時間")
-    else:
-        labels = ("list (linear search)", "set", "number of items N", "time (s)", "Data size vs. time")
-    plt.figure(figsize=(6, 4))
-    plt.plot(ns, [row[1] for row in timing_rows], marker="o", label=labels[0])
-    plt.plot(ns, [row[2] for row in timing_rows], marker="s", label=labels[1])
-    plt.xlabel(labels[2])
-    plt.ylabel(labels[3])
-    plt.title(labels[4])
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.show()
-else:
-    print("matplotlib がないため、グラフは表示しません。")
+# 【教員提供コード】データ件数と実行時間のグラフ（plot_speed は第3章 3.8 で定義済み）
+plot_speed(timing_rows, jp("リスト（基本版）と集合（改良版）の比較", "list (baseline) vs. set (improved)"))
 ''')
 md("""
 ## 9.5 異常検出の性能評価
@@ -2813,40 +3580,10 @@ md("""
 """)
 md(TEACHER)
 code('''
-# 【教員提供コード】検出性能の評価
-def evaluate_detection(detected, actual_anomalies, all_items):
-    """検出結果を評価する。
-
-    引数:
-        detected: 検出したもの（通信元、ユーザーなど）の集まり
-        actual_anomalies: 実際に異常なものの集まり（正解ラベルから作る）
-        all_items: 評価の対象すべての集まり
-    戻り値:
-        TP, FP, FN, TN と各指標の辞書（0 で割る場合は None）
-    """
-    detected, actual, items = set(detected), set(actual_anomalies), set(all_items)
-    tp = len(detected & actual)
-    fp = len(detected - actual)
-    fn = len(actual - detected)
-    tn = len(items - detected - actual)
-
-    def ratio(a, b):
-        return a / b if b > 0 else None
-
-    precision = ratio(tp, tp + fp)
-    recall = ratio(tp, tp + fn)
-    f1 = None
-    if precision is not None and recall is not None and precision + recall > 0:
-        f1 = 2 * precision * recall / (precision + recall)
-    return {"TP": tp, "FP": fp, "FN": fn, "TN": tn,
-            "Accuracy": ratio(tp + tn, len(items)), "Precision": precision,
-            "Recall": recall, "F1": f1, "FPR": ratio(fp, fp + tn)}
-
-
+# 【教員提供コード】検出性能の評価の例（evaluate_detection は第3章 3.8 で定義済み）
 # 使い方の例（架空の例）：5 人のうち、B と C が本当に異常。検出したのは C と D。
 result = evaluate_detection(detected=["C", "D"], actual_anomalies=["B", "C"], all_items=["A", "B", "C", "D", "E"])
-for key, value in result.items():
-    print(f"{key:9s}: {value if value is None or isinstance(value, int) else round(value, 3)}")
+show_evaluation(result, "人（架空の例）")
 ''')
 md("""
 ## 9.6 テスト
@@ -2881,11 +3618,18 @@ Notebook は複数人で同時に編集すると、変更をまとめる（マ�
 
 ## 9.8 成果物のまとめ方
 
-| レベル | 成果物 |
-| --- | --- |
-| Level 1（必須） | 動作する基本アルゴリズム、異常候補の検出結果、小さなデータでのテスト、処理内容の説明、簡単な考察 |
-| Level 2（推奨） | 改良アルゴリズム、基本版との比較、実行時間の比較、計算量の考察、グラフ |
-| Level 3（選択） | 公開データへの適用、時系列分析、判定ルールの改善、検出性能の評価、独自機能 |
+**チームの成果物の基本形**（詳しくは `TASKS.md`）
+
+| 成果物 | 内容 | レベル |
+| --- | --- | --- |
+| 実装した Notebook | 担当テーマの関数を実装した Notebook（実行結果付き） | 必須 |
+| 基本課題の動作確認 | Level 1 の【動作確認】（Mini と Tiny）がすべて `[OK]` | 必須 |
+| 検出結果 | Tiny Dataset で見つけた「調べる必要がある候補」と、グラフまたは表 | 必須 |
+| 説明と考察 | 処理の流れの説明、閾値を変えたときの変化、誤検出の例 | 必須 |
+| 改良課題の動作確認 | Level 2 の【動作確認】がすべて `[OK]` | 推奨 |
+| 基本版と改良版の比較 | 結果が同じことの確認、実行時間の表とグラフ、計算量の説明（効率化の場合）／検出結果の違い（検出方法の改良の場合） | 推奨 |
+| 発展課題 | 公開ログへの適用、時間窓、評価指標など（1 つ以上） | 選択 |
+| 問題点と改善案 | 残っている問題と、次に改良するならどうするか | 必須 |
 
 ## 9.9 発表の構成
 
@@ -2901,27 +3645,51 @@ Notebook は複数人で同時に編集すると、変更をまとめる（マ�
 """)
 
 
-def has_outputs(path):
-    """Notebook に実行結果が残っているか（＝学生や教員が実行・編集した Notebook か）を調べる"""
+def source_fingerprint(nb_cells):
+    """セルの種類と内容（source）だけから作る指紋。メタデータや実行結果は含めない。"""
+    payload = json.dumps([[c["cell_type"], c["source"]] for c in nb_cells], ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def overwrite_problem(path):
+    """path の Notebook を上書きしてはいけない理由を返す（上書きしてよければ None）。
+
+    - 実行結果が残っている（学生や教員が実行した）
+    - 生成時の指紋がない（このスクリプト以外で作られた、または古い形式）
+    - 生成後にセルの内容が編集されている（実行結果を消去していても、Markdown だけの編集でも検出する）
+    """
     existing = nbformat.read(path, as_version=4)
-    return any(c.get("outputs") or c.get("execution_count") for c in existing.cells if c.cell_type == "code")
+    if any(c.get("outputs") or c.get("execution_count") for c in existing.cells if c.cell_type == "code"):
+        return "実行結果が残っています"
+    stored = existing.metadata.get("c1_generator", {}).get("source_fingerprint")
+    if stored is None:
+        return "生成スクリプトの記録（指紋）がありません"
+    if source_fingerprint(existing.cells) != stored:
+        return "生成した後にセルの内容が編集されています"
+    return None
 
 
 def main():
     parser = argparse.ArgumentParser(description="統合 Notebook の生成（教員用マスター）")
     parser.add_argument("--output", default=str(OUTPUT), help="出力先（既定：C1_cybersecurity_starter.ipynb）")
-    parser.add_argument("--force", action="store_true", help="実行結果が残っている Notebook でも上書きする")
+    parser.add_argument("--force", action="store_true", help="編集・実行された Notebook でも上書きする")
     args = parser.parse_args()
     output = Path(args.output)
-    if output.exists() and has_outputs(output) and not args.force:
-        raise SystemExit(f"{output.name} には実行結果が残っています。学生が編集した Notebook の可能性があるため、"
-                         "上書きしません。\n別のファイルに出力する場合は --output、上書きする場合は --force を指定してください。")
+    if output.exists() and not args.force:
+        problem = overwrite_problem(output)
+        if problem:
+            raise SystemExit(f"{output.name}：{problem}。学生が編集した Notebook の可能性があるため、上書きしません。\n"
+                             "別のファイルに出力する場合は --output、上書きしてよい場合は --force を指定してください。")
 
     nb = new_notebook(cells=cells)
     for i, cell in enumerate(nb.cells, start=1):
         cell.id = f"cell-{i:03d}"   # 再生成しても同じ内容になるよう、セル ID を連番で固定する
     nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
     nb.metadata["language_info"] = {"name": "python"}
+    nb.metadata["c1_generator"] = {
+        "note": "scripts/build_notebook.py で生成。再生成時に、生成後の編集を検出するための指紋。",
+        "source_fingerprint": source_fingerprint(nb.cells),
+    }
     nbformat.validate(nb)
     nbformat.write(nb, output)
     n_md = sum(c.cell_type == "markdown" for c in cells)

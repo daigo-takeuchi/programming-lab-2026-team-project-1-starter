@@ -99,6 +99,24 @@ class TestStructure(unittest.TestCase):
                 if stripped.startswith(("return", "for ", "if ", "while ")):
                     self.fail(f"学生実装課題のセルに実装らしい行があります: {stripped}")
 
+    def test_theme_support_cells(self):
+        """各テーマに、完成イメージ・Tiny Dataset での確認（Level 1・2）・グラフがある"""
+        for n in THEMES:
+            text = "\n".join(source(c) for c, ch in zip(self.cells, self.chapters) if ch == n)
+            with self.subTest(chapter=n):
+                self.assertIn("### 完成イメージ", text)
+                self.assertIn("### Tiny Dataset で確認する\n", text)
+                self.assertIn("### Tiny Dataset で確認する（Level 2）", text)
+                self.assertIn("plot_bars(", text)
+
+    def test_every_task_has_hints(self):
+        """Level 1・2 のすべての課題（ひな形のセル）の直後にヒントがある"""
+        for i, cell in enumerate(self.cells):
+            if cell["cell_type"] == "code" and "【学生実装課題" in source(cell):
+                with self.subTest(cell=source(cell).splitlines()[0]):
+                    self.assertIn("【ヒント】", source(self.cells[i + 1]))
+                    self.assertIn("ヒント3：疑似コード", source(self.cells[i + 1]))
+
     def test_no_absolute_paths(self):
         all_text = "\n".join(source(c) for c in self.cells)
         self.assertNotIn("/home/", all_text)
@@ -134,6 +152,53 @@ class TestBuildScript(unittest.TestCase):
             result = self.run_build("--output", str(out))
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(out.read_text(encoding="utf-8"), NOTEBOOK.read_text(encoding="utf-8"))
+
+    def _copy_and_edit(self, tmp, edit):
+        out = Path(tmp) / "student.ipynb"
+        nb = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+        edit(nb)
+        out.write_text(json.dumps(nb, ensure_ascii=False), encoding="utf-8")
+        return out
+
+    def assert_refused(self, edit):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._copy_and_edit(tmp, edit)
+            before = out.read_text(encoding="utf-8")
+            result = self.run_build("--output", str(out))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(out.read_text(encoding="utf-8"), before)
+
+    def test_refuses_edited_code_without_outputs(self):
+        """学生がコードを編集したが実行していない Notebook は上書きしない"""
+        def edit(nb):
+            cell = next(c for c in nb["cells"] if c["cell_type"] == "code" and "【学生実装課題" in "".join(c["source"]))
+            cell["source"] = "".join(cell["source"]).replace("# TODO", "# 学生のメモ\n    # TODO", 1)
+        self.assert_refused(edit)
+
+    def test_refuses_edited_markdown(self):
+        """Markdown だけを編集した Notebook も上書きしない"""
+        def edit(nb):
+            cell = next(c for c in nb["cells"] if c["cell_type"] == "markdown")
+            cell["source"] = "".join(cell["source"]) + "\n\n学生の考察：…"
+        self.assert_refused(edit)
+
+    def test_refuses_edited_then_outputs_cleared(self):
+        """実行結果を消去していても、編集があれば上書きしない"""
+        def edit(nb):
+            cell = next(c for c in nb["cells"] if c["cell_type"] == "code" and "【学生実装課題" in "".join(c["source"]))
+            cell["source"] = "".join(cell["source"]).replace('raise NotImplementedError("学生実装課題")', "return []", 1)
+            for c in nb["cells"]:
+                if c["cell_type"] == "code":
+                    c["outputs"], c["execution_count"] = [], None
+        self.assert_refused(edit)
+
+    def test_unchanged_notebook_can_be_regenerated(self):
+        """生成したままの Notebook（実行も編集もしていない）は、教員が再生成できる"""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "nb.ipynb"
+            out.write_text(NOTEBOOK.read_text(encoding="utf-8"), encoding="utf-8")
+            result = self.run_build("--output", str(out))
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_refuses_to_overwrite_executed_notebook(self):
         """実行結果が残っている（学生が使った）Notebook は上書きしない"""

@@ -15,8 +15,8 @@
 | Mini Dataset | 配布可 | Notebook の中 |
 | Tiny Dataset（`data/c1x/*_tiny.csv` 6 ファイル） | 配布可 | 人工データ |
 | `data/c1c/web_access_log_synthetic.csv` | 配布可 | 人工データ |
-| `data/c1b/authentication_small.csv`、`ssh_events_small.csv`、`data/c1d/system_events_small.csv` | **条件付き**（下記 3 章） | Loghub 由来。`LICENSE_LOGHUB.txt` を必ず同じフォルダに入れる |
-| `data/c1a/network_flows_small.csv`、`data/c1e/data_transfer_small.csv` | **保留** | CIC-IDS2017 の再配布条件が未確認（Phase 2B） |
+| `data/c1b/authentication_small.csv`、`ssh_events_small.csv`、`data/c1d/system_events_small.csv` | **授業内の限定配布のみ**（下記 3 章） | Loghub 由来。`LICENSE_LOGHUB.txt` を必ず同じフォルダに入れる。**公開 GitHub には含めない**（教員の方針、2026-11-27） |
+| `data/c1a/network_flows_small.csv`、`data/c1e/data_transfer_small.csv` | **保留**（未作成） | CIC-IDS2017 の取得を保留（Phase 2B） |
 | 学生向けデータ辞書 | Phase 5 で作成 | `docs/data_dictionary.md` から学生向けの部分を抜き出す |
 | 学生が実行できるテスト | Phase 5 で検討 | Notebook の【動作確認】セルが中心。必要なら学生用の簡単なテストを追加 |
 
@@ -26,11 +26,13 @@
 | --- | --- |
 | `detection.py`、`starter.py`、`log_parser.py`、`benchmark.py`、旧 `tests/test_*.py` | 旧教材。`detection.py` は Level 2 の解答に近い完成コード |
 | `textbook/` | 第三者の著作物（再配布の許諾なし） |
-| `scripts/`（`build_notebook.py`、`download_datasets.py`、`preprocess_*.py` など） | 教員用。`build_notebook.py` で学生の Notebook を上書きしないため |
+| `scripts/`（`build_notebook.py`、`run_reference_check.py`、`download_datasets.py`、`preprocess_*.py` など） | 教員用。`build_notebook.py` で学生の Notebook を上書きしないため |
 | `tests/`（教員用テスト） | 教員の検証用 |
 | `docs/`、`CLAUDE.md`、`requirements-dev.txt` | 開発管理文書 |
 | `data/raw/`、匿名化の対応表 | 原データと、匿名化を元に戻せる情報 |
-| `.venv/`、`results/` の中身、`solutions/` | 仮想環境、実行結果、教員用の完成解答 |
+| `.venv/`、`results/` の中身 | 仮想環境、実行結果（`run_reference_check.py --save` の出力は**解答を含む**） |
+| `solutions/` | 教員用の参照実装（全 33 関数の完成解答）。Git 管理外 |
+| `docs/teacher_guide.md`、`docs/educational_validation_report.md` | 教員専用文書 |
 | モノレポの Git 履歴 | 旧教材の完成コードや他トピックを含むため。配布用リポジトリは新しい履歴で作る |
 
 ## 3. Loghub 由来データの扱い
