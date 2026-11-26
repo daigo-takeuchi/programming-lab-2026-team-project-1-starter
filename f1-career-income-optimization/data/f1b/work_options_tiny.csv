@@ -1,0 +1,7 @@
+option_id,work_style,annual_income,weekly_work_hours
+W1,full_time,400,40
+W2,full_time_overtime,480,55
+W3,short_time,280,28
+W4,part_time,150,20
+W5,remote_flexible,360,35
+W6,leave,0,0

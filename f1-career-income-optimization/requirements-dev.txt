@@ -1,0 +1,5 @@
+# 【教員用】Notebook の生成・実行テスト用（学生には不要）
+nbformat>=5.9
+nbclient>=0.10
+ipykernel>=6.29
+matplotlib>=3.7

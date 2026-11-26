@@ -77,11 +77,22 @@ Programming Lab 2026 の Team Project 1 で使う starter code（研究の出発
 
 | Topic | テーマ名 | ディレクトリ | 主なアルゴリズム | README |
 | --- | --- | --- | --- | --- |
-| F1 | キャリア選択と生涯所得の最適化 | `f1-career-income-optimization/` | NPV 計算・全探索・ソート | [README](f1-career-income-optimization/README.md) |
+| F1 | キャリア・ライフイベント・世代間資源継承の意思決定と最適化（4 テーマから 1 つを選ぶ：F-1A キャリア選択・教育投資と生涯所得／F-1B 家族形成・子育て・介護と資源配分／F-1C 住宅取得・居住選択と長期家計設計／F-1D 世代間資源継承と次世代の生活設計） | `f1-career-income-optimization/` | 年次シミュレーション・累積和、線形探索・二分探索、全探索、ソート（統合 Notebook [`F1_life_planning_starter.ipynb`](f1-career-income-optimization/F1_life_planning_starter.ipynb)） | [README](f1-career-income-optimization/README.md) |
 | F2 | 資産形成と早期リタイア（FIRE）のシミュレーション | `f2-financial-independence/` | シミュレーション・線形探索・ソート | [README](f2-financial-independence/README.md) |
 | F3 | 出会いとマッチングのアルゴリズム | `f3-matching-algorithms/` | Gale-Shapley 法・Greedy 法・モンテカルロ法 | [README](f3-matching-algorithms/README.md) |
 | F4 | パートナーシップの安定性と意思決定 | `f4-partnership-simulation/` | Greedy 法・シミュレーション・モンテカルロ法 | [README](f4-partnership-simulation/README.md) |
 | F5 | 自由テーマによるアルゴリズム研究 | `f5-open-research-project/` | チームが選ぶ（初期デモは線形探索・二分探索） | [README](f5-open-research-project/README.md) |
+
+**F1 について：** F1「キャリア・ライフイベント・世代間資源継承の意思決定と最適化」（Decision-Making and Optimization of Career Paths, Life Events, and Intergenerational Resource Transfer）は、4 つのテーマを 1 つの Notebook（[`f1-career-income-optimization/F1_life_planning_starter.ipynb`](f1-career-income-optimization/F1_life_planning_starter.ipynb)）にまとめた教材です。全 4 テーマが同じ Notebook を使い、**チームは 4 テーマのうち 1 テーマだけ**に取り組みます。
+
+- F-1A：キャリア・生涯所得
+- F-1B：家族・所得・時間配分
+- F-1C：住宅選択
+- F-1D：世代間資源移転
+
+学習の流れは、① Level 1（基本実装、必須）→ ② Level 2（探索・ソートによる改良、推奨）→ ③ チーム独自の機能開発（必須）→ ④ 動作確認・性能評価・考察・発表 です。
+データは教材用の人工データと、公開統計（e-Stat）を加工したデータを使います（公開統計がなくても Level 1・2 は実行できます）。
+始め方は [F1 の README](f1-career-income-optimization/README.md)、課題と評価は [TASKS.md](f1-career-income-optimization/TASKS.md) を読んでください。
 
 ## 4.1 トピック別の難易度・作業負荷の目安
 
@@ -110,7 +121,7 @@ Programming Lab 2026 の Team Project 1 で使う starter code（研究の出発
 | E1 | 自律移動ロボットの経路探索アルゴリズム | ★★★☆☆ | ★★☆☆☆ | ★★★☆☆ |
 | E2 | CPU・GPU・TPU による計算性能とアルゴリズムの関係 | ★★★☆☆ | ★★☆☆☆ | ★★★★☆ |
 | E3 | 神経回路モデリング — ANN・SNN 比較と Spiking Manifesto の実装 | ★★★★★ | ★★★☆☆ | ★★★★★ |
-| F1 | キャリア選択と生涯所得の最適化 | ★★☆☆☆ | ★☆☆☆☆ | ★★★☆☆ |
+| F1 | キャリア・ライフイベント・世代間資源継承の意思決定と最適化（担当する 1 テーマ） | ★★☆☆☆ | ★★☆☆☆ | ★★★☆☆ |
 | F2 | 資産形成と早期リタイア（FIRE）のシミュレーション | ★★☆☆☆ | ★☆☆☆☆ | ★★★☆☆ |
 | F3 | 出会いとマッチングのアルゴリズム | ★★★★☆ | ★★☆☆☆ | ★★★★☆ |
 | F4 | パートナーシップの安定性と意思決定 | ★★★★☆ | ★★☆☆☆ | ★★★★★ |
